@@ -7,31 +7,22 @@ struct MessagesListView: View {
     ScrollViewReader { proxy in
       ScrollView {
         LazyVStack(spacing: 8) {
-          if store.isModelLoading {
-            VStack(spacing: 8) {
-              ProgressView()
-              Text("Loading model...")
-                .foregroundColor(.secondary)
-            }
-            .padding()
-          } else {
-            ForEach(store.messages, id: \.id) { message in
-              MessageRow(message: message)
-            }
+          ForEach(store.messages, id: \.id) { message in
+            MessageRow(message: message)
+          }
 
-            if store.isLoading && !store.currentAssistantMessage.isEmpty {
-              MessageRow(
-                message: MessageBubble(content: store.currentAssistantMessage, isUser: false)
-              )
-              .id("streaming")
-            } else if store.isLoading {
-              HStack {
-                TypingIndicator()
-                Spacer()
-              }
-              .padding(.horizontal)
-              .id("typing")
+          if store.isLoading && !store.currentAssistantMessage.isEmpty {
+            MessageRow(
+              message: MessageBubble(content: store.currentAssistantMessage, isUser: false)
+            )
+            .id("streaming")
+          } else if store.isLoading {
+            HStack {
+              TypingIndicator()
+              Spacer()
             }
+            .padding(.horizontal)
+            .id("typing")
           }
         }
         .padding(.horizontal)

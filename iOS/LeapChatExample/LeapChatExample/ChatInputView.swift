@@ -38,7 +38,7 @@ struct ChatInputView: View {
             .foregroundColor(.blue)
             .frame(width: 32, height: 32)
         }
-        .disabled(store.isModelLoading || store.isLoading)
+        .disabled(store.isLoading)
         .onChange(of: selectedImage) { _, newItem in
           Task {
             if let newItem = newItem {
@@ -49,7 +49,7 @@ struct ChatInputView: View {
 
         TextField("Message", text: $store.input, axis: .vertical)
           .textFieldStyle(.roundedBorder)
-          .disabled(store.isModelLoading)
+          .disabled(store.isLoading)
 
         Button(action: { Task { await store.send() } }) {
           Image(systemName: "paperplane.fill")
@@ -58,13 +58,13 @@ struct ChatInputView: View {
             .background(
               (store.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 && store.attachedImage == nil)
-                || store.isModelLoading || store.isLoading
+                || store.isLoading
                 ? Color.gray : Color.blue
             )
             .clipShape(Circle())
         }
         .disabled(
-          store.isModelLoading || store.isLoading
+          store.isLoading
             || (store.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
               && store.attachedImage == nil)
         )
