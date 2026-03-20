@@ -17,7 +17,8 @@ settings:
 
 packages:
   LeapSDK:
-    path: ..
+    url: https://github.com/Liquid4All/leap-ios
+    from: 0.9.2
 
 targets:
   LeapChatExample:
