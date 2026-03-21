@@ -253,6 +253,7 @@ class ChatStore {
         guard !trimmed.isEmpty else { return }
 
         messages.append(MessageBubble(content: trimmed, isUser: true))
+        recordChatIfNeeded(displayContent: trimmed)
         input = ""
         isLoading = true
         currentAssistantMessage = ""
@@ -282,6 +283,7 @@ class ChatStore {
         }
         currentAssistantMessage = ""
         isLoading = false
+        persistMessages()
     }
 
     // MARK: - MLX Generation
