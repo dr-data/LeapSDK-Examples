@@ -1,7 +1,12 @@
 import Foundation
 
 enum AppDestination: Hashable {
-  case aiProviders
-  case localModelsBrowser
-  case modelDetail(ModelDefinition)
+    case appHome
+    case aiProviders
+    case openRouterConfig
+    case localModelsBrowser
+    case customBackends
+    case customBackendEdit(CustomBackend?)
+    case modelDetail(ModelDefinition)
+    case modelDetailPopup(ModelDefinition)
 }
