@@ -1,0 +1,725 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		022CFD71AC1A46BC983BBEC9 /* AppHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B46E3C28406785F6259B19C /* AppHomeView.swift */; };
+		0C1683D91A693A513C07B4B9 /* LeapChatExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F1E85EB50C7B32C4E4DD2F /* LeapChatExampleTests.swift */; };
+		0DF538BE48D3580B08DEB9F9 /* ModelSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 620195B9C5FDD9D08F6AE73D /* ModelSelectorView.swift */; };
+		0EBB3C15D49A4BDD28373273 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D46C17DA4473BCA0197364C /* Assets.xcassets */; };
+		108D35713EAA8CA57A3C21AA /* ModelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F73A32815176A558E8A903 /* ModelStore.swift */; };
+		1D609D4DC37818A97C48CE57 /* MLXModelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BFA5C52463A74165C388DB /* MLXModelService.swift */; };
+		298FA8EF166D562C2C1F7FB2 /* LlamaCppService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67539F1929698F0BD9DF38F1 /* LlamaCppService.swift */; };
+		2C22419DB7191A65E9D34C94 /* PromptDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E62601B942A3E5D1B07DD7F /* PromptDetailsView.swift */; };
+		2F0C90CFF8A88F9811F324F9 /* LocalModelsBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20E50BB9189661627682F606 /* LocalModelsBrowserView.swift */; };
+		39F1D154B1A3F24FF085B371 /* LeapModelDownloader in Frameworks */ = {isa = PBXBuildFile; productRef = 22D874CC05CD44EE418ED8BA /* LeapModelDownloader */; };
+		3AF99702AFE05A86AFBE9CDC /* AIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DA7FA896F0DC88592F9B879 /* AIProvider.swift */; };
+		3FC1CC1A1096DAB4C9DB8B5C /* CustomBackendStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71E2564B61B3FB881805D271 /* CustomBackendStore.swift */; };
+		405DE129F26E522E94496189 /* RecentChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BCEA9B1BFD4BF8DAE601883 /* RecentChat.swift */; };
+		499ACB46E12903E35FA2F3F1 /* ModelDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7424DE5064E819673D607B /* ModelDetailView.swift */; };
+		55BE5B0CF2E77540957473FC /* TypingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA68165D5CB1EC40226C46 /* TypingIndicator.swift */; };
+		59BBCF7A75D094F92DDB49B2 /* ModelDetailPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C531768029AD537E271586A4 /* ModelDetailPopupView.swift */; };
+		624BF3C262BB4A105D4E0AD2 /* CustomBackendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E5BDBE13DCC745024A74DBD /* CustomBackendsView.swift */; };
+		6AB20FAE87A0BCDA40C66F68 /* CustomBackendEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A094FAF8F1943152E360B8C2 /* CustomBackendEditView.swift */; };
+		7C3FB370FE51D7C38F530E0B /* LeapChatExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE6B7C41E1267EB3C1BBDFA /* LeapChatExampleApp.swift */; };
+		80EFFFCB3C67C3C9FDDD392B /* LeapSDK in Frameworks */ = {isa = PBXBuildFile; productRef = A2A65E4C20A82B76384533E3 /* LeapSDK */; };
+		81E08DE773E1CD2787898572 /* DownloadStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A7DBD98C9B33EE7CF21ECF /* DownloadStatus.swift */; };
+		8337A8CA75B5D828E92BA22D /* ChatSidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5092E894C6523988489CD67 /* ChatSidebarView.swift */; };
+		8983785C4105847AF6A0CB60 /* PromptStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D669CCD4D15FE892844ABBDA /* PromptStore.swift */; };
+		91DAFB14F51F94A31A50AB03 /* MLXSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 0A287BBF8BD42DFB748FF966 /* MLXSupport */; };
+		98358EB26AE15D5F0458D0BE /* ModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56861875004E0A7A1EFDBBA9 /* ModelCatalog.swift */; };
+		9BE1A821040916C44F7D4A23 /* AppDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92EE9CDF10F40987885014FC /* AppDestination.swift */; };
+		A2735F868702DDF2D7A95F45 /* AIProvidersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D089D0334838176BB8075ECE /* AIProvidersView.swift */; };
+		A7FB738C6E7CAB87EB0660BA /* OpenRouterConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7590234DD7ADBADDA4494EB0 /* OpenRouterConfigView.swift */; };
+		B8488CC78FA88A645ED0907E /* MessageRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7765FA3DF16165874761BECC /* MessageRow.swift */; };
+		BCFFB7EDA7AE1345B14C2132 /* CustomBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4C3FCDC2BC4374B2C88CB8 /* CustomBackend.swift */; };
+		C3E82129769C246C4479F79E /* ChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DF0F7CCB100AED5B6B5A1B6 /* ChatStore.swift */; };
+		C514362775D26BE394A9509D /* LeapChatExampleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB02BB6A014FD0C79924EEB /* LeapChatExampleUITests.swift */; };
+		D36FF45B93D5F436DDB5EFAC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0252129B58F4FCAEE72254D2 /* ContentView.swift */; };
+		DF64002D6512864F0CD6911D /* LeapChatExampleUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51C11745FB5DB7F58A53F9D5 /* LeapChatExampleUITestsLaunchTests.swift */; };
+		ED47C5605664C7B6C380BC0F /* RecentChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1837C793062E20F0E784CB4 /* RecentChatStore.swift */; };
+		F01708777BC66EAE9B3EF0D2 /* ChatInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 459EF1F606FC798648821AE1 /* ChatInputView.swift */; };
+		F51C19C4E1540696598AD8FA /* MessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29B01284474472A45F2EC19F /* MessageBubble.swift */; };
+		FF2013B4780DD793E238C5F7 /* MessagesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A50E5D91A26661B85402ED /* MessagesListView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		388818BB1C4223A5238ECF2F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 587468159C994E2033E56E23 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 03F0165CA955C3DF86FA6C94;
+			remoteInfo = LeapChatExample;
+		};
+		BDEB2EBE5C991C70E4D86A39 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 587468159C994E2033E56E23 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 03F0165CA955C3DF86FA6C94;
+			remoteInfo = LeapChatExample;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0252129B58F4FCAEE72254D2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		0B46E3C28406785F6259B19C /* AppHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHomeView.swift; sourceTree = "<group>"; };
+		0CE6B7C41E1267EB3C1BBDFA /* LeapChatExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeapChatExampleApp.swift; sourceTree = "<group>"; };
+		0DF0F7CCB100AED5B6B5A1B6 /* ChatStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStore.swift; sourceTree = "<group>"; };
+		1DA7FA896F0DC88592F9B879 /* AIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIProvider.swift; sourceTree = "<group>"; };
+		20E50BB9189661627682F606 /* LocalModelsBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalModelsBrowserView.swift; sourceTree = "<group>"; };
+		29B01284474472A45F2EC19F /* MessageBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBubble.swift; sourceTree = "<group>"; };
+		2D46C17DA4473BCA0197364C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		398398927999B69D444B26DD /* LeapChatExampleTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LeapChatExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3E4C3FCDC2BC4374B2C88CB8 /* CustomBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBackend.swift; sourceTree = "<group>"; };
+		459EF1F606FC798648821AE1 /* ChatInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInputView.swift; sourceTree = "<group>"; };
+		4BCEA9B1BFD4BF8DAE601883 /* RecentChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentChat.swift; sourceTree = "<group>"; };
+		51C11745FB5DB7F58A53F9D5 /* LeapChatExampleUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeapChatExampleUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		56861875004E0A7A1EFDBBA9 /* ModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCatalog.swift; sourceTree = "<group>"; };
+		5D7424DE5064E819673D607B /* ModelDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailView.swift; sourceTree = "<group>"; };
+		620195B9C5FDD9D08F6AE73D /* ModelSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSelectorView.swift; sourceTree = "<group>"; };
+		67539F1929698F0BD9DF38F1 /* LlamaCppService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LlamaCppService.swift; sourceTree = "<group>"; };
+		71E2564B61B3FB881805D271 /* CustomBackendStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBackendStore.swift; sourceTree = "<group>"; };
+		7590234DD7ADBADDA4494EB0 /* OpenRouterConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenRouterConfigView.swift; sourceTree = "<group>"; };
+		75BFA5C52463A74165C388DB /* MLXModelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLXModelService.swift; sourceTree = "<group>"; };
+		7765FA3DF16165874761BECC /* MessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRow.swift; sourceTree = "<group>"; };
+		7E62601B942A3E5D1B07DD7F /* PromptDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptDetailsView.swift; sourceTree = "<group>"; };
+		83EA68165D5CB1EC40226C46 /* TypingIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicator.swift; sourceTree = "<group>"; };
+		84F73A32815176A558E8A903 /* ModelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelStore.swift; sourceTree = "<group>"; };
+		8E5BDBE13DCC745024A74DBD /* CustomBackendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBackendsView.swift; sourceTree = "<group>"; };
+		92EE9CDF10F40987885014FC /* AppDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDestination.swift; sourceTree = "<group>"; };
+		96F1E85EB50C7B32C4E4DD2F /* LeapChatExampleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeapChatExampleTests.swift; sourceTree = "<group>"; };
+		A094FAF8F1943152E360B8C2 /* CustomBackendEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBackendEditView.swift; sourceTree = "<group>"; };
+		ABB02BB6A014FD0C79924EEB /* LeapChatExampleUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeapChatExampleUITests.swift; sourceTree = "<group>"; };
+		B1837C793062E20F0E784CB4 /* RecentChatStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentChatStore.swift; sourceTree = "<group>"; };
+		BEB43CBC6CD36A19A835D901 /* LeapChatExampleUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LeapChatExampleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C531768029AD537E271586A4 /* ModelDetailPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailPopupView.swift; sourceTree = "<group>"; };
+		D089D0334838176BB8075ECE /* AIProvidersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIProvidersView.swift; sourceTree = "<group>"; };
+		D5A50E5D91A26661B85402ED /* MessagesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesListView.swift; sourceTree = "<group>"; };
+		D669CCD4D15FE892844ABBDA /* PromptStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptStore.swift; sourceTree = "<group>"; };
+		D9A7DBD98C9B33EE7CF21ECF /* DownloadStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadStatus.swift; sourceTree = "<group>"; };
+		E3600E24C983D6DC5E490471 /* iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = iOS; path = ..; sourceTree = SOURCE_ROOT; };
+		E637A7EE02096DE5C01C12E1 /* LeapChatExample.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LeapChatExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5092E894C6523988489CD67 /* ChatSidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatSidebarView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A495B6296B5CBD5B2BE08FBE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				80EFFFCB3C67C3C9FDDD392B /* LeapSDK in Frameworks */,
+				39F1D154B1A3F24FF085B371 /* LeapModelDownloader in Frameworks */,
+				91DAFB14F51F94A31A50AB03 /* MLXSupport in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1610FFC98CEF66E78A8B12E4 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				2D46C17DA4473BCA0197364C /* Assets.xcassets */,
+				459EF1F606FC798648821AE1 /* ChatInputView.swift */,
+				0DF0F7CCB100AED5B6B5A1B6 /* ChatStore.swift */,
+				0252129B58F4FCAEE72254D2 /* ContentView.swift */,
+				0CE6B7C41E1267EB3C1BBDFA /* LeapChatExampleApp.swift */,
+				29B01284474472A45F2EC19F /* MessageBubble.swift */,
+				7765FA3DF16165874761BECC /* MessageRow.swift */,
+				D5A50E5D91A26661B85402ED /* MessagesListView.swift */,
+				83EA68165D5CB1EC40226C46 /* TypingIndicator.swift */,
+				AD4398534552F40CC9A2EA4A /* Models */,
+				1B1B02797DF96F7870D532FB /* Stores */,
+				A730F66ED0EAC420F8499E75 /* Views */,
+			);
+			name = Sources;
+			path = LeapChatExample;
+			sourceTree = "<group>";
+		};
+		1B1B02797DF96F7870D532FB /* Stores */ = {
+			isa = PBXGroup;
+			children = (
+				71E2564B61B3FB881805D271 /* CustomBackendStore.swift */,
+				67539F1929698F0BD9DF38F1 /* LlamaCppService.swift */,
+				75BFA5C52463A74165C388DB /* MLXModelService.swift */,
+				84F73A32815176A558E8A903 /* ModelStore.swift */,
+				D669CCD4D15FE892844ABBDA /* PromptStore.swift */,
+				B1837C793062E20F0E784CB4 /* RecentChatStore.swift */,
+			);
+			path = Stores;
+			sourceTree = "<group>";
+		};
+		3C3FB5D829E743236F8A078A /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				E3600E24C983D6DC5E490471 /* iOS */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		818E043299E1399075226D66 /* LeapChatExampleTests */ = {
+			isa = PBXGroup;
+			children = (
+				96F1E85EB50C7B32C4E4DD2F /* LeapChatExampleTests.swift */,
+			);
+			path = LeapChatExampleTests;
+			sourceTree = "<group>";
+		};
+		9ED23E15E83781AA1C7D5E93 /* LeapChatExampleUITests */ = {
+			isa = PBXGroup;
+			children = (
+				ABB02BB6A014FD0C79924EEB /* LeapChatExampleUITests.swift */,
+				51C11745FB5DB7F58A53F9D5 /* LeapChatExampleUITestsLaunchTests.swift */,
+			);
+			path = LeapChatExampleUITests;
+			sourceTree = "<group>";
+		};
+		A730F66ED0EAC420F8499E75 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				D089D0334838176BB8075ECE /* AIProvidersView.swift */,
+				0B46E3C28406785F6259B19C /* AppHomeView.swift */,
+				F5092E894C6523988489CD67 /* ChatSidebarView.swift */,
+				A094FAF8F1943152E360B8C2 /* CustomBackendEditView.swift */,
+				8E5BDBE13DCC745024A74DBD /* CustomBackendsView.swift */,
+				20E50BB9189661627682F606 /* LocalModelsBrowserView.swift */,
+				C531768029AD537E271586A4 /* ModelDetailPopupView.swift */,
+				5D7424DE5064E819673D607B /* ModelDetailView.swift */,
+				620195B9C5FDD9D08F6AE73D /* ModelSelectorView.swift */,
+				7590234DD7ADBADDA4494EB0 /* OpenRouterConfigView.swift */,
+				7E62601B942A3E5D1B07DD7F /* PromptDetailsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AD4398534552F40CC9A2EA4A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				1DA7FA896F0DC88592F9B879 /* AIProvider.swift */,
+				92EE9CDF10F40987885014FC /* AppDestination.swift */,
+				3E4C3FCDC2BC4374B2C88CB8 /* CustomBackend.swift */,
+				D9A7DBD98C9B33EE7CF21ECF /* DownloadStatus.swift */,
+				56861875004E0A7A1EFDBBA9 /* ModelCatalog.swift */,
+				4BCEA9B1BFD4BF8DAE601883 /* RecentChat.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		DF239FD4E979EA10B3C0466D = {
+			isa = PBXGroup;
+			children = (
+				818E043299E1399075226D66 /* LeapChatExampleTests */,
+				9ED23E15E83781AA1C7D5E93 /* LeapChatExampleUITests */,
+				3C3FB5D829E743236F8A078A /* Packages */,
+				1610FFC98CEF66E78A8B12E4 /* Sources */,
+				FD8285FE769A239249FDD94F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FD8285FE769A239249FDD94F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E637A7EE02096DE5C01C12E1 /* LeapChatExample.app */,
+				398398927999B69D444B26DD /* LeapChatExampleTests.xctest */,
+				BEB43CBC6CD36A19A835D901 /* LeapChatExampleUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		03F0165CA955C3DF86FA6C94 /* LeapChatExample */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 32194AFE5C008B5B6EAB6212 /* Build configuration list for PBXNativeTarget "LeapChatExample" */;
+			buildPhases = (
+				AA58A8B76D82D9104EE26F83 /* Sources */,
+				4A0820344CD9055B1F54DC90 /* Resources */,
+				A495B6296B5CBD5B2BE08FBE /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LeapChatExample;
+			packageProductDependencies = (
+				A2A65E4C20A82B76384533E3 /* LeapSDK */,
+				22D874CC05CD44EE418ED8BA /* LeapModelDownloader */,
+				0A287BBF8BD42DFB748FF966 /* MLXSupport */,
+			);
+			productName = LeapChatExample;
+			productReference = E637A7EE02096DE5C01C12E1 /* LeapChatExample.app */;
+			productType = "com.apple.product-type.application";
+		};
+		4EE71F0C5A766FD489205844 /* LeapChatExampleTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 79105271459AA1F3DCE77C35 /* Build configuration list for PBXNativeTarget "LeapChatExampleTests" */;
+			buildPhases = (
+				FB29F24CF762B3C6C31CC564 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				ADBAEA22C1EA10883657B67F /* PBXTargetDependency */,
+			);
+			name = LeapChatExampleTests;
+			packageProductDependencies = (
+			);
+			productName = LeapChatExampleTests;
+			productReference = 398398927999B69D444B26DD /* LeapChatExampleTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		6129157781C3921F10749364 /* LeapChatExampleUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3571732455FBFA060E462F8A /* Build configuration list for PBXNativeTarget "LeapChatExampleUITests" */;
+			buildPhases = (
+				D450D03B3A505DFC29D434AA /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1CADE201F1872743DDC81B14 /* PBXTargetDependency */,
+			);
+			name = LeapChatExampleUITests;
+			packageProductDependencies = (
+			);
+			productName = LeapChatExampleUITests;
+			productReference = BEB43CBC6CD36A19A835D901 /* LeapChatExampleUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		587468159C994E2033E56E23 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					03F0165CA955C3DF86FA6C94 = {
+						ProvisioningStyle = Automatic;
+					};
+					6129157781C3921F10749364 = {
+						TestTargetID = 03F0165CA955C3DF86FA6C94;
+					};
+				};
+			};
+			buildConfigurationList = 23ADB21C0B8B32E14C2AC2D7 /* Build configuration list for PBXProject "ai.liquid.LeapChatExample" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = DF239FD4E979EA10B3C0466D;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5FD2FBA386012C242A03A8CB /* XCLocalSwiftPackageReference ".." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = FD8285FE769A239249FDD94F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				03F0165CA955C3DF86FA6C94 /* LeapChatExample */,
+				4EE71F0C5A766FD489205844 /* LeapChatExampleTests */,
+				6129157781C3921F10749364 /* LeapChatExampleUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4A0820344CD9055B1F54DC90 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0EBB3C15D49A4BDD28373273 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AA58A8B76D82D9104EE26F83 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3AF99702AFE05A86AFBE9CDC /* AIProvider.swift in Sources */,
+				A2735F868702DDF2D7A95F45 /* AIProvidersView.swift in Sources */,
+				9BE1A821040916C44F7D4A23 /* AppDestination.swift in Sources */,
+				022CFD71AC1A46BC983BBEC9 /* AppHomeView.swift in Sources */,
+				F01708777BC66EAE9B3EF0D2 /* ChatInputView.swift in Sources */,
+				8337A8CA75B5D828E92BA22D /* ChatSidebarView.swift in Sources */,
+				C3E82129769C246C4479F79E /* ChatStore.swift in Sources */,
+				D36FF45B93D5F436DDB5EFAC /* ContentView.swift in Sources */,
+				BCFFB7EDA7AE1345B14C2132 /* CustomBackend.swift in Sources */,
+				6AB20FAE87A0BCDA40C66F68 /* CustomBackendEditView.swift in Sources */,
+				3FC1CC1A1096DAB4C9DB8B5C /* CustomBackendStore.swift in Sources */,
+				624BF3C262BB4A105D4E0AD2 /* CustomBackendsView.swift in Sources */,
+				81E08DE773E1CD2787898572 /* DownloadStatus.swift in Sources */,
+				7C3FB370FE51D7C38F530E0B /* LeapChatExampleApp.swift in Sources */,
+				298FA8EF166D562C2C1F7FB2 /* LlamaCppService.swift in Sources */,
+				2F0C90CFF8A88F9811F324F9 /* LocalModelsBrowserView.swift in Sources */,
+				1D609D4DC37818A97C48CE57 /* MLXModelService.swift in Sources */,
+				F51C19C4E1540696598AD8FA /* MessageBubble.swift in Sources */,
+				B8488CC78FA88A645ED0907E /* MessageRow.swift in Sources */,
+				FF2013B4780DD793E238C5F7 /* MessagesListView.swift in Sources */,
+				98358EB26AE15D5F0458D0BE /* ModelCatalog.swift in Sources */,
+				59BBCF7A75D094F92DDB49B2 /* ModelDetailPopupView.swift in Sources */,
+				499ACB46E12903E35FA2F3F1 /* ModelDetailView.swift in Sources */,
+				0DF538BE48D3580B08DEB9F9 /* ModelSelectorView.swift in Sources */,
+				108D35713EAA8CA57A3C21AA /* ModelStore.swift in Sources */,
+				A7FB738C6E7CAB87EB0660BA /* OpenRouterConfigView.swift in Sources */,
+				2C22419DB7191A65E9D34C94 /* PromptDetailsView.swift in Sources */,
+				8983785C4105847AF6A0CB60 /* PromptStore.swift in Sources */,
+				405DE129F26E522E94496189 /* RecentChat.swift in Sources */,
+				ED47C5605664C7B6C380BC0F /* RecentChatStore.swift in Sources */,
+				55BE5B0CF2E77540957473FC /* TypingIndicator.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D450D03B3A505DFC29D434AA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C514362775D26BE394A9509D /* LeapChatExampleUITests.swift in Sources */,
+				DF64002D6512864F0CD6911D /* LeapChatExampleUITestsLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB29F24CF762B3C6C31CC564 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0C1683D91A693A513C07B4B9 /* LeapChatExampleTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1CADE201F1872743DDC81B14 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 03F0165CA955C3DF86FA6C94 /* LeapChatExample */;
+			targetProxy = BDEB2EBE5C991C70E4D86A39 /* PBXContainerItemProxy */;
+		};
+		ADBAEA22C1EA10883657B67F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 03F0165CA955C3DF86FA6C94 /* LeapChatExample */;
+			targetProxy = 388818BB1C4223A5238ECF2F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0A05487DAD75F8F913A89420 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ai.liquid.examples.LeapChatExampleTests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LeapChatExample.app/LeapChatExample";
+			};
+			name = Debug;
+		};
+		439CE2E748E0D01D0491F433 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		5CED066F5D51A8562739FC30 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ai.liquid.examples.LeapChatExampleUITests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = LeapChatExample;
+			};
+			name = Release;
+		};
+		8CF409D9C6B3766D8593407D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ai.liquid.examples.LeapChatExampleUITests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = LeapChatExample;
+			};
+			name = Debug;
+		};
+		8E3CD927513A44B86FD3FCDC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ai.liquid.LeapChatExample;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B6B0EB5A5522C312933CA789 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ai.liquid.examples.LeapChatExampleTests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LeapChatExample.app/LeapChatExample";
+			};
+			name = Release;
+		};
+		CA82C6133295A616F9A3B578 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		EACBF20F5F9716841F553F7D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ai.liquid.LeapChatExample;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		23ADB21C0B8B32E14C2AC2D7 /* Build configuration list for PBXProject "ai.liquid.LeapChatExample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				439CE2E748E0D01D0491F433 /* Debug */,
+				CA82C6133295A616F9A3B578 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		32194AFE5C008B5B6EAB6212 /* Build configuration list for PBXNativeTarget "LeapChatExample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EACBF20F5F9716841F553F7D /* Debug */,
+				8E3CD927513A44B86FD3FCDC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		3571732455FBFA060E462F8A /* Build configuration list for PBXNativeTarget "LeapChatExampleUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8CF409D9C6B3766D8593407D /* Debug */,
+				5CED066F5D51A8562739FC30 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		79105271459AA1F3DCE77C35 /* Build configuration list for PBXNativeTarget "LeapChatExampleTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A05487DAD75F8F913A89420 /* Debug */,
+				B6B0EB5A5522C312933CA789 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		5FD2FBA386012C242A03A8CB /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0A287BBF8BD42DFB748FF966 /* MLXSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MLXSupport;
+		};
+		22D874CC05CD44EE418ED8BA /* LeapModelDownloader */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LeapModelDownloader;
+		};
+		A2A65E4C20A82B76384533E3 /* LeapSDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LeapSDK;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 587468159C994E2033E56E23 /* Project object */;
+}
