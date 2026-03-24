@@ -107,6 +107,7 @@
 		D2964C032AFBDE9CD8119194 /* VisionRaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78DA9CF69956A6BEBE18C712 /* VisionRaster.swift */; };
 		D36FF45B93D5F436DDB5EFAC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0252129B58F4FCAEE72254D2 /* ContentView.swift */; };
 		D690E13029DF283E17F4FB5F /* PaddleOCRTextDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B1577DB2F2E4723A8F91840 /* PaddleOCRTextDecoder.swift */; };
+		D7D6EF2C4ADEA7293C92D6A0 /* WebSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ADEA920206041660355DAD0 /* WebSearchService.swift */; };
 		DF64002D6512864F0CD6911D /* LeapChatExampleUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51C11745FB5DB7F58A53F9D5 /* LeapChatExampleUITestsLaunchTests.swift */; };
 		E04DE9FB9C247D3E54EF4BA3 /* ChatSessionRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A86527001D4ED2BD4EA2448 /* ChatSessionRecord.swift */; };
 		E326A20AEA5CEBB97BB0006D /* GLMOCRProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28692991583F2221788ED53 /* GLMOCRProcessor.swift */; };
@@ -154,6 +155,7 @@
 		18C88633E2687894F55BF4D1 /* GLMOCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLMOCRService.swift; sourceTree = "<group>"; };
 		19260A1C35CF491940428DF2 /* GLMOCRDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLMOCRDefaults.swift; sourceTree = "<group>"; };
 		1A4617495A6F03D12893F657 /* GLMOCRRoPEIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLMOCRRoPEIndex.swift; sourceTree = "<group>"; };
+		1ADEA920206041660355DAD0 /* WebSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSearchService.swift; sourceTree = "<group>"; };
 		1B1577DB2F2E4723A8F91840 /* PaddleOCRTextDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddleOCRTextDecoder.swift; sourceTree = "<group>"; };
 		1DA7FA896F0DC88592F9B879 /* AIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIProvider.swift; sourceTree = "<group>"; };
 		205E12032350A4FB5F703C47 /* BonjourDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonjourDiscovery.swift; sourceTree = "<group>"; };
@@ -335,6 +337,7 @@
 				B1837C793062E20F0E784CB4 /* RecentChatStore.swift */,
 				646F4DDD0BD58134CF2819F8 /* SyncGate.swift */,
 				EFAD1DF45711C107C6E43F1B /* SyncManager.swift */,
+				1ADEA920206041660355DAD0 /* WebSearchService.swift */,
 				BC74B745449E6D9C81F67BED /* GLMOCREngine */,
 				310171C7EDF8A32AF8A40E1F /* Networking */,
 				5277B775AD9B5A54289E99C6 /* PaddleOCREngine */,
@@ -778,6 +781,7 @@
 				3EB651095C2B25838D1DB7B3 /* VisionJPEG.swift in Sources */,
 				D2964C032AFBDE9CD8119194 /* VisionRaster.swift in Sources */,
 				A643780EA688CD95EE4042A2 /* VisionResizeBicubic.swift in Sources */,
+				D7D6EF2C4ADEA7293C92D6A0 /* WebSearchService.swift in Sources */,
 				4FA590D5C9C26E75EBA8DC28 /* Weights.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

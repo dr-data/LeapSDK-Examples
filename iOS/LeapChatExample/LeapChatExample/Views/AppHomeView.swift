@@ -86,7 +86,7 @@ struct AppHomeView: View {
                         category: .math,
                         suggestedModelId: "LFM2-350M-Math",
                         defaultQuant: "Q4_K_M",
-                        systemPrompt: "You are a math tutor. Help the student solve math problems step by step. Show your work clearly and explain each step. Support both English and Traditional Chinese (繁體中文). Use mathematical notation where appropriate.",
+                        systemPrompt: "You are a math tutor. Help the student solve math problems step by step. Show your work clearly and explain each step. Support both English and Traditional Chinese (繁體中文). Use mathematical notation where appropriate. IMPORTANT: After solving any problem, always VERIFY your answer by substituting it back into the original equation or using an alternative method. Show both the solution and verification steps clearly. If the verification fails, correct your answer before presenting the final result.",
                         examples: SpecializedExamples.math
                     )
                 case .ragChat:

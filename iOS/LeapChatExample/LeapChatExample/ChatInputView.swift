@@ -4,6 +4,9 @@ import SwiftUI
 struct ChatInputView: View {
     @Bindable var store: ChatStore
     @State private var selectedImage: PhotosPickerItem?
+    @State private var showSearchSheet = false
+    @State private var searchQuery = ""
+    @State private var searchService = WebSearchService()
     @Environment(ModelStore.self) private var modelStore
     var syncGate: SyncGate?
     var syncManager: SyncManager?
@@ -119,23 +122,21 @@ struct ChatInputView: View {
                 .background(cardColor)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
 
-                HStack(spacing: 6) {
-                    Image(systemName: "globe")
-                        .font(.system(size: 14))
-                        .foregroundColor(secondaryText)
-                    Text("Search")
-                        .font(.system(size: 14))
-                        .foregroundColor(secondaryText)
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 14)
-                .background(cardColor)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-
-                Button(action: {}) {
-                    Image(systemName: "mic")
-                        .font(.system(size: 22))
-                        .foregroundColor(secondaryText)
+                Button {
+                    showSearchSheet = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "globe")
+                            .font(.system(size: 14))
+                            .foregroundColor(secondaryText)
+                        Text("Search")
+                            .font(.system(size: 14))
+                            .foregroundColor(secondaryText)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 14)
+                    .background(cardColor)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                 }
             }
             .padding(.vertical, 12)
@@ -160,6 +161,14 @@ struct ChatInputView: View {
             }
         }
         .background(bgColor)
+        .sheet(isPresented: $showSearchSheet) {
+            SearchSheet(searchService: searchService) { results in
+                let context = searchService.formatAsContext(results)
+                store.input = context + "\n\nBased on the above search results, " + store.input
+                showSearchSheet = false
+                Task { await store.send() }
+            }
+        }
     }
 
     private var ocrTaskOptions: [(OCRTask, String)] {
@@ -256,5 +265,88 @@ private struct TextHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 36
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
+    }
+}
+
+// MARK: - Search Sheet
+
+struct SearchSheet: View {
+    @Bindable var searchService: WebSearchService
+    var onUseResults: ([WebSearchService.SearchResult]) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var query = ""
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 16) {
+                HStack {
+                    TextField("Search the web...", text: $query)
+                        .textFieldStyle(.roundedBorder)
+                        .submitLabel(.search)
+                        .onSubmit { performSearch() }
+
+                    Button {
+                        performSearch()
+                    } label: {
+                        Image(systemName: "magnifyingglass")
+                            .padding(8)
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .clipShape(Circle())
+                    }
+                    .disabled(query.isEmpty || searchService.isSearching)
+                }
+                .padding(.horizontal)
+
+                if searchService.isSearching {
+                    ProgressView("Searching...")
+                        .padding()
+                }
+
+                if !searchService.lastResults.isEmpty {
+                    List(searchService.lastResults) { result in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(result.title)
+                                .font(.headline)
+                                .lineLimit(2)
+                            Text(result.snippet)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .lineLimit(3)
+                        }
+                    }
+                    .listStyle(.plain)
+
+                    Button {
+                        onUseResults(searchService.lastResults)
+                    } label: {
+                        Label("Use Results in Chat", systemImage: "text.insert")
+                            .fontWeight(.medium)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                }
+
+                Spacer()
+            }
+            .navigationTitle("Web Search")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func performSearch() {
+        Task {
+            _ = await searchService.search(query: query)
+        }
     }
 }
