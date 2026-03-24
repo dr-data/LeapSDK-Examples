@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 enum ActiveSheet: Identifiable {
@@ -19,9 +20,12 @@ struct ContentView: View {
     @Environment(ModelStore.self) private var modelStore
     @Environment(PromptStore.self) private var promptStore
     @Environment(RecentChatStore.self) private var recentChatStore
+    @Environment(SyncGate.self) private var syncGate
+    @Environment(SyncManager.self) private var syncManager
+    @Environment(AuthManager.self) private var authManager
 
-    private let bgColor = Color(red: 0.039, green: 0.059, blue: 0.110)
-    private let secondaryText = Color(red: 0.580, green: 0.639, blue: 0.722)
+    private var bgColor: Color { AppColors.background }
+    private var secondaryText: Color { AppColors.secondaryText }
 
     private var activeModelDisplayName: String {
         modelStore.activeModel?.name ?? "No Model"
@@ -42,7 +46,7 @@ struct ContentView: View {
                     noModelSelectedView
                 } else {
                     MessagesListView(store: store)
-                    ChatInputView(store: store)
+                    ChatInputView(store: store, syncGate: syncGate, syncManager: syncManager)
                 }
             }
 
@@ -83,14 +87,59 @@ struct ContentView: View {
         .onAppear {
             store.onFirstMessage = { chatId, title in
                 let category = modelStore.activeModel?.category.rawValue
-                recentChatStore.addChat(id: chatId, title: title, category: category, messages: store.messages)
+                recentChatStore.addChat(id: chatId, title: title, category: category, studentAccountId: authManager.currentUser?.accountId, messages: store.messages)
             }
             store.onMessagesChanged = { chatId, messages in
                 recentChatStore.updateMessages(for: chatId, messages: messages)
             }
+            // Wire up sync monitoring — use syncManager's shared context so all
+            // components read/write to the SAME ModelContext
+            if store.modelContext == nil {
+                store.modelContext = syncManager.sharedModelContext
+                store.syncGate = syncGate
+                store.syncManager = syncManager
+                store.studentAccountId = authManager.currentUser?.accountId
+                print("[ContentView] Sync wired, studentId=\(authManager.currentUser?.accountId.uuidString ?? "nil")")
+
+                // Backfill studentAccountId on legacy chats that don't have it
+                if let studentId = authManager.currentUser?.accountId {
+                    for i in recentChatStore.recentChats.indices {
+                        if recentChatStore.recentChats[i].studentAccountId == nil {
+                            recentChatStore.recentChats[i].studentAccountId = studentId
+                        }
+                    }
+                    recentChatStore.save()
+                    print("[ContentView] Backfilled studentAccountId on \(recentChatStore.recentChats.filter { $0.studentAccountId == studentId }.count) chats")
+                }
+            }
+
+            // Update lastActiveAt for online status tracking
+            if let studentId = authManager.currentUser?.accountId {
+                let descriptor = FetchDescriptor<UserAccount>(
+                    predicate: #Predicate<UserAccount> { $0.accountId == studentId }
+                )
+                if let account = try? syncManager.sharedModelContext.fetch(descriptor).first {
+                    account.lastActiveAt = Date()
+                    try? syncManager.sharedModelContext.save()
+                    print("[ContentView] Updated lastActiveAt for \(account.displayName)")
+                }
+            }
         }
+        // Default model (LFM2.5-VL-1.6B) is pre-downloaded on the home screen
         .onChange(of: modelStore.activeModel?.id) { _, _ in
-            if modelStore.isLlamaCppActive {
+            if modelStore.isAppleVisionOCRActive {
+                store.configureWithAppleVisionOCR(
+                    service: modelStore.appleVisionOCRService
+                )
+            } else if modelStore.isPaddleOCRActive {
+                store.configureWithPaddleOCR(
+                    service: modelStore.paddleOCRService
+                )
+            } else if modelStore.isGLMOCRActive {
+                store.configureWithGLMOCR(
+                    service: modelStore.glmocrService
+                )
+            } else if modelStore.isLlamaCppActive {
                 store.configureWithLlamaCpp(
                     service: modelStore.llamaCppService,
                     systemPrompt: promptStore.systemPrompt
@@ -125,6 +174,28 @@ struct ContentView: View {
                     .foregroundColor(secondaryText)
             }
             .accessibilityIdentifier("menuButton")
+
+            // Sync status indicator
+            if syncManager.pendingCount > 0 {
+                HStack(spacing: 3) {
+                    if syncManager.isSyncing {
+                        ProgressView()
+                            .scaleEffect(0.6)
+                            .tint(.orange)
+                    } else {
+                        Circle()
+                            .fill(.orange)
+                            .frame(width: 6, height: 6)
+                    }
+                    Text("\(syncManager.pendingCount)")
+                        .font(.system(size: 11))
+                        .foregroundColor(.orange)
+                }
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(Color.orange.opacity(0.15))
+                .clipShape(Capsule())
+            }
 
             Spacer()
 
@@ -170,6 +241,14 @@ struct ContentView: View {
                     .foregroundColor(secondaryText)
             }
             .accessibilityIdentifier("newChatButton")
+
+            Button {
+                authManager.logout()
+            } label: {
+                Image(systemName: "rectangle.portrait.and.arrow.right")
+                    .font(.system(size: 18))
+                    .foregroundColor(.red.opacity(0.8))
+            }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
@@ -223,10 +302,4 @@ struct ContentView: View {
     }
 }
 
-#Preview {
-    ContentView()
-        .environment(ModelStore())
-        .environment(PromptStore())
-        .environment(CustomBackendStore())
-        .environment(RecentChatStore())
-}
+// Preview disabled — requires SwiftData ModelContainer for SyncGate/SyncManager/AuthManager

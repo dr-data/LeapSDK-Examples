@@ -8,7 +8,11 @@ struct MessagesListView: View {
       ScrollView {
         LazyVStack(spacing: 8) {
           ForEach(store.messages, id: \.id) { message in
-            MessageRow(message: message)
+            MessageRow(message: message) { text in
+                // Copy handled in MessageRow
+            } onEdit: { text in
+                store.input = text
+            }
           }
 
           if store.isLoading && !store.currentAssistantMessage.isEmpty {

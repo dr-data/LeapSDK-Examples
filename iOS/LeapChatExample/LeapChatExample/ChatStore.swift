@@ -1,5 +1,6 @@
 import LeapSDK
 import PhotosUI
+import SwiftData
 import SwiftUI
 
 @Observable
@@ -20,7 +21,20 @@ class ChatStore {
     var modelRunner: ModelRunner?
     var mlxService: MLXModelService?
     var llamaCppService: LlamaCppService?
+    var glmocrService: GLMOCRService?
+    var paddleOCRService: PaddleOCRService?
+    var appleVisionOCRService: AppleVisionOCRService?
     var systemPromptForMLX: String?
+    var ocrTask: OCRTask = .text
+
+    // Monitoring & sync
+    var syncGate: SyncGate?
+    var modelContext: ModelContext?
+    var syncManager: SyncManager?
+    var studentAccountId: UUID?
+
+    // Generation control
+    @ObservationIgnored private var generationTask: Task<Void, Never>?
 
     // Throttle streaming UI updates to avoid overwhelming SwiftUI
     @ObservationIgnored private var pendingChunks = ""
@@ -75,6 +89,8 @@ class ChatStore {
     func configureWithLlamaCpp(service: LlamaCppService, systemPrompt: String?) {
         llamaCppService = service
         mlxService = nil
+        glmocrService = nil
+        paddleOCRService = nil
         conversation = nil
         modelRunner = nil
         systemPromptForMLX = systemPrompt
@@ -82,11 +98,98 @@ class ChatStore {
         hasRecordedChat = false
         currentChatId = nil
         messages.append(
-            MessageBubble(content: "GLM-OCR model loaded. You can start chatting.", isUser: false))
+            MessageBubble(content: "Model loaded via llama.cpp. You can start chatting.", isUser: false))
+    }
+
+    @MainActor
+    func configureWithGLMOCR(service: GLMOCRService) {
+        glmocrService = service
+        paddleOCRService = nil
+        llamaCppService = nil
+        mlxService = nil
+        conversation = nil
+        modelRunner = nil
+        systemPromptForMLX = nil
+        ocrTask = .text
+        messages.removeAll()
+        hasRecordedChat = false
+        currentChatId = nil
+        messages.append(
+            MessageBubble(
+                content: "GLM-OCR model loaded. Attach an image and send to extract text. You can also type a custom instruction.",
+                isUser: false))
+    }
+
+    @MainActor
+    func configureWithPaddleOCR(service: PaddleOCRService) {
+        paddleOCRService = service
+        glmocrService = nil
+        llamaCppService = nil
+        mlxService = nil
+        conversation = nil
+        modelRunner = nil
+        systemPromptForMLX = nil
+        ocrTask = .text
+        messages.removeAll()
+        hasRecordedChat = false
+        currentChatId = nil
+        messages.append(
+            MessageBubble(
+                content: "PP-OCRv5 model loaded. Attach an image and send to extract text. Supports multilingual text detection and recognition.",
+                isUser: false))
+    }
+
+    @MainActor
+    func configureWithAppleVisionOCR(service: AppleVisionOCRService) {
+        appleVisionOCRService = service
+        paddleOCRService = nil
+        glmocrService = nil
+        llamaCppService = nil
+        mlxService = nil
+        conversation = nil
+        modelRunner = nil
+        systemPromptForMLX = nil
+        ocrTask = .text
+        messages.removeAll()
+        hasRecordedChat = false
+        currentChatId = nil
+        messages.append(
+            MessageBubble(
+                content: "Apple Vision OCR ready. Attach an image and send to extract text. Supports English, Chinese, Japanese, Korean, and more. No download required.",
+                isUser: false))
     }
 
     @MainActor
     func send() async {
+        // Update student's last active timestamp
+        updateLastActive()
+
+        // Sync gate check — block if too many unsynced messages or too long since last sync
+        if let gate = syncGate, !gate.canSend() {
+            print("[ChatStore] Sync gate blocked: \(gate.blockReason?.userMessage ?? "unknown")")
+            return
+        }
+
+        print("[ChatStore.send] conversation=\(conversation != nil), llama=\(llamaCppService?.isLoaded ?? false), mlx=\(mlxService?.isLoaded ?? false), input=\(input.prefix(50))")
+
+        // Route to Apple Vision OCR if active
+        if let visionOCR = appleVisionOCRService {
+            await sendWithAppleVisionOCR(visionOCR)
+            return
+        }
+
+        // Route to PaddleOCR if active
+        if let paddleOCR = paddleOCRService, paddleOCR.isLoaded {
+            await sendWithPaddleOCR(paddleOCR)
+            return
+        }
+
+        // Route to GLM-OCR if active
+        if let glmocr = glmocrService, glmocr.isLoaded {
+            await sendWithGLMOCR(glmocr)
+            return
+        }
+
         // Route to direct llama.cpp if active
         if let llama = llamaCppService, llama.isLoaded {
             await sendWithLlamaCpp(llama)
@@ -243,6 +346,163 @@ class ChatStore {
         currentAssistantMessage.append(pendingChunks)
         pendingChunks = ""
         lastUIUpdate = now
+    }
+
+    // MARK: - Apple Vision OCR
+
+    @MainActor
+    private func sendWithAppleVisionOCR(_ visionOCR: AppleVisionOCRService) async {
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard attachedImage != nil || !trimmed.isEmpty else { return }
+
+        guard let image = attachedImage else {
+            messages.append(MessageBubble(content: trimmed, isUser: true))
+            input = ""
+            messages.append(
+                MessageBubble(
+                    content: "Apple Vision OCR requires an image. Please attach an image and try again.",
+                    isUser: false))
+            return
+        }
+
+        let displayContent = trimmed.isEmpty ? "[Image] OCR" : "[Image] \(trimmed)"
+        messages.append(
+            MessageBubble(content: displayContent, isUser: true, image: image))
+        recordChatIfNeeded(displayContent: displayContent)
+
+        let capturedImage = image
+        input = ""
+        attachedImage = nil
+        isLoading = true
+        currentAssistantMessage = ""
+        pendingChunks = ""
+        lastUIUpdate = Date()
+
+        let stream = visionOCR.generate(image: capturedImage)
+
+        for await chunk in stream {
+            pendingChunks.append(chunk)
+            flushChunksIfNeeded()
+        }
+
+        if !pendingChunks.isEmpty {
+            currentAssistantMessage.append(pendingChunks)
+            pendingChunks = ""
+        }
+
+        if !currentAssistantMessage.isEmpty {
+            messages.append(
+                MessageBubble(content: currentAssistantMessage, isUser: false))
+        }
+        currentAssistantMessage = ""
+        isLoading = false
+        persistMessages()
+    }
+
+    // MARK: - GLM-OCR Generation
+
+    @MainActor
+    private func sendWithGLMOCR(_ glmocr: GLMOCRService) async {
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard attachedImage != nil || !trimmed.isEmpty else { return }
+
+        guard let image = attachedImage else {
+            messages.append(MessageBubble(content: trimmed, isUser: true))
+            input = ""
+            messages.append(
+                MessageBubble(
+                    content: "GLM-OCR requires an image. Please attach an image and try again.",
+                    isUser: false))
+            return
+        }
+
+        var displayContent = trimmed.isEmpty ? "[Image] OCR" : "[Image] \(trimmed)"
+        messages.append(
+            MessageBubble(content: displayContent, isUser: true, image: image))
+        recordChatIfNeeded(displayContent: displayContent)
+
+        let capturedImage = image
+        input = ""
+        attachedImage = nil
+        isLoading = true
+        currentAssistantMessage = ""
+        pendingChunks = ""
+        lastUIUpdate = Date()
+
+        let stream = glmocr.generate(
+            image: capturedImage,
+            task: ocrTask,
+            userText: trimmed.isEmpty ? nil : trimmed
+        )
+
+        for await chunk in stream {
+            pendingChunks.append(chunk)
+            flushChunksIfNeeded()
+        }
+
+        if !pendingChunks.isEmpty {
+            currentAssistantMessage.append(pendingChunks)
+            pendingChunks = ""
+        }
+
+        if !currentAssistantMessage.isEmpty {
+            messages.append(
+                MessageBubble(content: currentAssistantMessage, isUser: false))
+        }
+        currentAssistantMessage = ""
+        isLoading = false
+        persistMessages()
+    }
+
+    // MARK: - PaddleOCR Generation
+
+    @MainActor
+    private func sendWithPaddleOCR(_ paddleOCR: PaddleOCRService) async {
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard attachedImage != nil || !trimmed.isEmpty else { return }
+
+        guard let image = attachedImage else {
+            messages.append(MessageBubble(content: trimmed, isUser: true))
+            input = ""
+            messages.append(
+                MessageBubble(
+                    content: "PP-OCRv5 requires an image. Please attach an image and try again.",
+                    isUser: false))
+            return
+        }
+
+        let displayContent = trimmed.isEmpty ? "[Image] OCR" : "[Image] \(trimmed)"
+        messages.append(
+            MessageBubble(content: displayContent, isUser: true, image: image))
+        recordChatIfNeeded(displayContent: displayContent)
+
+        let capturedImage = image
+        input = ""
+        attachedImage = nil
+        isLoading = true
+        currentAssistantMessage = ""
+        pendingChunks = ""
+        lastUIUpdate = Date()
+
+        let stream = paddleOCR.generate(image: capturedImage)
+
+        for await chunk in stream {
+            pendingChunks.append(chunk)
+            flushChunksIfNeeded()
+        }
+
+        if !pendingChunks.isEmpty {
+            currentAssistantMessage.append(pendingChunks)
+            pendingChunks = ""
+        }
+
+        if !currentAssistantMessage.isEmpty {
+            messages.append(
+                MessageBubble(content: currentAssistantMessage, isUser: false))
+        }
+        currentAssistantMessage = ""
+        isLoading = false
+        persistMessages()
     }
 
     // MARK: - Direct llama.cpp Generation
@@ -403,6 +663,38 @@ class ChatStore {
     private func persistMessages() {
         guard let chatId = currentChatId else { return }
         onMessagesChanged?(chatId, messages)
+
+        // Persist any new messages for sync tracking (idempotent)
+        for (index, bubble) in messages.enumerated() {
+            persistSyncableMessageIfNeeded(bubble, sequenceNumber: index)
+        }
+
+        // Auto-sync in background after each message exchange
+        if let manager = syncManager, !manager.isSyncing {
+            Task {
+                await manager.performSync()
+            }
+        }
+    }
+
+    @MainActor
+    func stopGenerating() {
+        generationTask?.cancel()
+        generationTask = nil
+        if isLoading {
+            // Finalize whatever was streamed so far
+            if !pendingChunks.isEmpty {
+                currentAssistantMessage.append(pendingChunks)
+                pendingChunks = ""
+            }
+            if !currentAssistantMessage.isEmpty {
+                messages.append(
+                    MessageBubble(content: currentAssistantMessage + "\n\n[Stopped]", isUser: false))
+            }
+            currentAssistantMessage = ""
+            isLoading = false
+            persistMessages()
+        }
     }
 
     func removeAttachedImage() {
@@ -416,5 +708,84 @@ class ChatStore {
         self.hasRecordedChat = true
         self.input = ""
         self.currentAssistantMessage = ""
+    }
+
+    // MARK: - Activity Tracking
+
+    private func updateLastActive() {
+        guard let context = modelContext, let studentId = studentAccountId else { return }
+        let descriptor = FetchDescriptor<UserAccount>(
+            predicate: #Predicate<UserAccount> { $0.accountId == studentId }
+        )
+        if let account = try? context.fetch(descriptor).first {
+            account.lastActiveAt = Date()
+            try? context.save()
+        }
+    }
+
+    // MARK: - Sync Persistence
+
+    /// Persist a message bubble to SwiftData for sync tracking.
+    /// Idempotent — skips if messageId already exists.
+    func persistSyncableMessageIfNeeded(_ bubble: MessageBubble, sequenceNumber: Int) {
+        guard let context = modelContext else {
+            print("[Sync] ERROR: modelContext is nil — messages NOT being tracked!")
+            return
+        }
+        guard let chatId = currentChatId else {
+            print("[Sync] ERROR: currentChatId is nil — messages NOT being tracked!")
+            return
+        }
+        // Skip system/setup messages (non-user, at index 0, before any real chat)
+        if !bubble.isUser && sequenceNumber == 0 && messages.count <= 1 { return }
+
+        // Check if already persisted
+        let bubbleId = bubble.id
+        var existsDescriptor = FetchDescriptor<SyncableMessage>(
+            predicate: #Predicate<SyncableMessage> { $0.messageId == bubbleId }
+        )
+        existsDescriptor.fetchLimit = 1
+        if let count = try? context.fetchCount(existsDescriptor), count > 0 {
+            return // Already tracked
+        }
+
+        let syncMessage = SyncableMessage(
+            messageId: bubble.id,
+            chatId: chatId,
+            content: bubble.content,
+            isUser: bubble.isUser,
+            timestamp: bubble.timestamp,
+            thumbnailData: bubble.generateThumbnail(),
+            thinkingTime: bubble.thinkingTime,
+            sequenceNumber: sequenceNumber
+        )
+        context.insert(syncMessage)
+
+        // Update or create ChatSessionRecord
+        let targetChatId = chatId
+        var sessionDescriptor = FetchDescriptor<ChatSessionRecord>(
+            predicate: #Predicate { $0.chatId == targetChatId }
+        )
+        sessionDescriptor.fetchLimit = 1
+
+        if let session = try? context.fetch(sessionDescriptor).first {
+            session.messageCount += 1
+            session.unsyncedCount += 1
+            session.updatedAt = Date()
+        } else if let studentId = studentAccountId {
+            let session = ChatSessionRecord(
+                chatId: chatId,
+                studentAccountId: studentId,
+                title: messages.first?.content.prefix(50).description ?? "Chat",
+                createdAt: Date()
+            )
+            session.messageCount = 1
+            session.unsyncedCount = 1
+            context.insert(session)
+        }
+
+        try? context.save()
+        syncManager?.updatePendingCount()
+        print("[Sync] Persisted message \(bubble.id) (user=\(bubble.isUser)) — pending: \(syncManager?.pendingCount ?? -1)")
     }
 }

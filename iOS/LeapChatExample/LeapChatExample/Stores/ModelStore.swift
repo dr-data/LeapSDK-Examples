@@ -18,6 +18,18 @@ class ModelStore: NSObject {
     let llamaCppService = LlamaCppService()
     var isLlamaCppActive = false
 
+    // GLM-OCR via MLX Swift backend
+    let glmocrService = GLMOCRService()
+    var isGLMOCRActive = false
+
+    // PaddleOCR backend
+    let paddleOCRService = PaddleOCRService()
+    var isPaddleOCRActive = false
+
+    // Apple Vision OCR (built-in, no download)
+    let appleVisionOCRService = AppleVisionOCRService()
+    var isAppleVisionOCRActive = false
+
     @ObservationIgnored private var activeDownloads: [String: URLSessionDownloadTask] = [:]
     @ObservationIgnored private var downloadContinuations: [String: CheckedContinuation<URL, Error>] = [:]
     @ObservationIgnored private var downloadProgressHandlers: [String: (Double) -> Void] = [:]
@@ -71,11 +83,75 @@ class ModelStore: NSObject {
         }
     }
 
+    // MARK: - Delete Model
+
+    @MainActor
+    func deleteModel(model: ModelDefinition, quantization: QuantizationOption) {
+        let path = localModelPath(model: model, quantization: quantization)
+        let key = downloadKey(model: model, quantization: quantization)
+        try? FileManager.default.removeItem(at: path)
+        downloadStatuses[key] = .notDownloaded
+
+        // Clear active model if it's the one being deleted
+        if activeModel?.id == model.id {
+            activeModel = nil
+            activeModelRunner = nil
+            activeQuantization = nil
+        }
+        print("[ModelStore] Deleted \(model.id)-\(quantization.name)")
+    }
+
+    func modelFileSize(model: ModelDefinition, quantization: QuantizationOption) -> String? {
+        let path = localModelPath(model: model, quantization: quantization)
+        guard let attrs = try? FileManager.default.attributesOfItem(atPath: path.path),
+              let size = attrs[.size] as? Int64 else { return nil }
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: size)
+    }
+
     // MARK: - Download & Load
+
+    /// Context size based on model category — RAG/extract need larger context for documents
+    private func contextSize(for model: ModelDefinition) -> UInt32 {
+        switch model.category {
+        case .rag, .extract:
+            return 16384  // 16K for document-heavy models (supports up to 32K)
+        default:
+            return 4096
+        }
+    }
 
     @MainActor
     func downloadAndLoad(model: ModelDefinition, quantization: QuantizationOption) async {
         let key = downloadKey(model: model, quantization: quantization)
+
+        // Apple Vision OCR — built-in, no download needed
+        if model.id == "Apple-Vision-OCR" {
+            isAppleVisionOCRActive = true
+            isPaddleOCRActive = false
+            isGLMOCRActive = false
+            isMLXActive = false
+            isLlamaCppActive = false
+            activeModel = model
+            activeQuantization = quantization
+            activeModelRunner = nil
+            downloadStatuses[key] = .downloaded
+            print("[ModelStore] Apple Vision OCR activated (built-in)")
+            return
+        }
+
+        // PaddleOCR models use a dedicated pipeline
+        if model.isPaddleOCR {
+            await loadPaddleOCR(model: model, quantization: quantization)
+            return
+        }
+
+        // GLM-OCR models use the custom MLX-based GLMOCRPipeline
+        if model.isGLMOCR {
+            await loadGLMOCR(model: model, quantization: quantization)
+            return
+        }
 
         // MLX models use a separate loading path
         if model.isMLX {
@@ -100,32 +176,37 @@ class ModelStore: NSObject {
         loadingMessage = "Downloading \(model.name) (\(quantization.name))..."
         downloadStatuses[key] = .downloading(progress: 0)
 
-        do {
-            let runner = try await Leap.load(
-                model: model.id,
-                quantization: quantization.name,
-                options: LiquidInferenceEngineManifestOptions(contextSize: 4096)
-            ) { [weak self] progress, _ in
-                Task { @MainActor in
-                    self?.downloadStatuses[key] = progress < 1.0
-                        ? .downloading(progress: Double(progress))
-                        : .downloading(progress: 1.0)
-                    self?.loadingMessage = progress < 1.0
-                        ? "Downloading: \(Int(progress * 100))%"
-                        : "Loading model into memory..."
+        // Try LeapSDK load with the model ID (may need lowercase for LEAP platform)
+        let modelIds = [model.id, model.id.lowercased()]
+        for modelId in modelIds {
+            do {
+                print("[ModelStore] Trying Leap.load(model: \"\(modelId)\", quantization: \"\(quantization.name)\")")
+                let runner = try await Leap.load(
+                    model: modelId,
+                    quantization: quantization.name,
+                    options: LiquidInferenceEngineManifestOptions(contextSize: contextSize(for: model))
+                ) { [weak self] progress, _ in
+                    Task { @MainActor in
+                        self?.downloadStatuses[key] = progress < 1.0
+                            ? .downloading(progress: Double(progress))
+                            : .downloading(progress: 1.0)
+                        self?.loadingMessage = progress < 1.0
+                            ? "Downloading: \(Int(progress * 100))%"
+                            : "Loading model into memory..."
+                    }
                 }
-            }
 
-            activeModelRunner = runner
-            activeModel = model
-            activeQuantization = quantization
-            downloadStatuses[key] = .downloaded
-            loadingMessage = ""
-            isLoading = false
-            return
-        } catch {
-            // LeapSDK load failed (expected on simulator) — fallback to direct download
-            print("LeapSDK load failed: \(error). Trying direct download...")
+                activeModelRunner = runner
+                activeModel = model
+                activeQuantization = quantization
+                downloadStatuses[key] = .downloaded
+                loadingMessage = ""
+                isLoading = false
+                print("[ModelStore] Leap.load SUCCESS with modelId=\(modelId)")
+                return
+            } catch {
+                print("[ModelStore] Leap.load FAILED for modelId=\(modelId): \(error)")
+            }
         }
 
         // Fallback: Direct download from HuggingFace
@@ -185,6 +266,8 @@ class ModelStore: NSObject {
         isLoading = true
         isLlamaCppActive = false
         isMLXActive = false
+        isPaddleOCRActive = false
+        isGLMOCRActive = false
 
         // Download if not already present
         if !isModelFilePresent(model: model, quantization: quantization) {
@@ -220,8 +303,19 @@ class ModelStore: NSObject {
         downloadStatuses[key] = .downloading(progress: 0.99)
 
         do {
-            llamaCppService.unload()
-            try llamaCppService.load(ggufPath: localPath.path)
+            let service = self.llamaCppService
+            let path = localPath.path
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                DispatchQueue.global(qos: .userInitiated).async {
+                    do {
+                        service.unload()
+                        try service.load(ggufPath: path)
+                        continuation.resume()
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                }
+            }
 
             activeModelRunner = nil
             activeModel = model
@@ -233,6 +327,96 @@ class ModelStore: NSObject {
             downloadStatuses[key] = .failed(message: error.localizedDescription)
             loadingMessage = "Load failed: \(error.localizedDescription)"
             print("LlamaCpp load error: \(error)")
+        }
+
+        isLoading = false
+    }
+
+    // MARK: - PaddleOCR Loading
+
+    @MainActor
+    private func loadPaddleOCR(model: ModelDefinition, quantization: QuantizationOption) async {
+        let key = downloadKey(model: model, quantization: quantization)
+        guard let repo = model.huggingFaceRepo else {
+            downloadStatuses[key] = .failed(message: "No HuggingFace repo for PaddleOCR model")
+            return
+        }
+
+        let backend: PaddleOCRBackend = model.paddleOCRBackend == "coreml" ? .coreml : .onnx
+
+        // Set PaddleOCR active BEFORE setting activeModel so onChange routes correctly
+        isPaddleOCRActive = true
+        isGLMOCRActive = false
+        isMLXActive = false
+        isLlamaCppActive = false
+        isLoading = true
+        loadingMessage = "Downloading \(model.name)..."
+        downloadStatuses[key] = .downloading(progress: 0)
+
+        do {
+            try await paddleOCRService.load(backend: backend, huggingFaceRepo: repo) { [weak self] fraction in
+                Task { @MainActor in
+                    self?.downloadStatuses[key] = .downloading(progress: fraction)
+                    self?.loadingMessage = fraction < 1.0
+                        ? "Downloading: \(Int(fraction * 100))%"
+                        : "Loading PaddleOCR model..."
+                }
+            }
+
+            activeModelRunner = nil
+            activeModel = model
+            activeQuantization = quantization
+            downloadStatuses[key] = .downloaded
+            loadingMessage = ""
+        } catch {
+            isPaddleOCRActive = false
+            downloadStatuses[key] = .failed(message: error.localizedDescription)
+            loadingMessage = "PaddleOCR load failed: \(error.localizedDescription)"
+            print("PaddleOCR load error: \(error)")
+        }
+
+        isLoading = false
+    }
+
+    // MARK: - GLM-OCR Loading
+
+    @MainActor
+    private func loadGLMOCR(model: ModelDefinition, quantization: QuantizationOption) async {
+        let key = downloadKey(model: model, quantization: quantization)
+        guard let repo = model.huggingFaceRepo else {
+            downloadStatuses[key] = .failed(message: "No HuggingFace repo for GLM-OCR model")
+            return
+        }
+
+        // Set GLM-OCR active BEFORE setting activeModel so onChange routes correctly
+        isGLMOCRActive = true
+        isPaddleOCRActive = false
+        isMLXActive = false
+        isLlamaCppActive = false
+        isLoading = true
+        loadingMessage = "Downloading \(model.name) via MLX..."
+        downloadStatuses[key] = .downloading(progress: 0)
+
+        do {
+            try await glmocrService.load(huggingFaceRepo: repo) { [weak self] fraction in
+                Task { @MainActor in
+                    self?.downloadStatuses[key] = .downloading(progress: fraction)
+                    self?.loadingMessage = fraction < 1.0
+                        ? "Downloading: \(Int(fraction * 100))%"
+                        : "Loading GLM-OCR model..."
+                }
+            }
+
+            activeModelRunner = nil
+            activeModel = model
+            activeQuantization = quantization
+            downloadStatuses[key] = .downloaded
+            loadingMessage = ""
+        } catch {
+            isGLMOCRActive = false
+            downloadStatuses[key] = .failed(message: error.localizedDescription)
+            loadingMessage = "GLM-OCR load failed: \(error.localizedDescription)"
+            print("GLM-OCR load error: \(error)")
         }
 
         isLoading = false
@@ -250,6 +434,9 @@ class ModelStore: NSObject {
 
         // Set MLX active BEFORE setting activeModel so onChange routes correctly
         isMLXActive = true
+        isPaddleOCRActive = false
+        isGLMOCRActive = false
+        isLlamaCppActive = false
         isLoading = true
         loadingMessage = "Downloading \(model.name) via MLX..."
         downloadStatuses[key] = .downloading(progress: 0)
@@ -283,6 +470,8 @@ class ModelStore: NSObject {
     private func loadModel(model: ModelDefinition, quantization: QuantizationOption) async {
         let key = downloadKey(model: model, quantization: quantization)
         isMLXActive = false
+        isPaddleOCRActive = false
+        isGLMOCRActive = false
         isLoading = true
         loadingMessage = "Loading model into memory..."
 
@@ -290,7 +479,7 @@ class ModelStore: NSObject {
             let runner = try await Leap.load(
                 model: model.id,
                 quantization: quantization.name,
-                options: LiquidInferenceEngineManifestOptions(contextSize: 4096)
+                options: LiquidInferenceEngineManifestOptions(contextSize: contextSize(for: model))
             ) { _, _ in }
 
             activeModelRunner = runner

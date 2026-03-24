@@ -18,6 +18,19 @@ struct MessageBubble: Codable {
         self.thinkingTime = thinkingTime
     }
 
+    /// Generate a thumbnail of the attached image for sync purposes.
+    /// Returns JPEG data at the specified max dimension size.
+    func generateThumbnail(maxSize: CGFloat = 200) -> Data? {
+        guard let image = image else { return nil }
+        let scale = min(maxSize / image.size.width, maxSize / image.size.height, 1.0)
+        let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        let thumbnail = renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+        return thumbnail.jpegData(compressionQuality: 0.5)
+    }
+
     enum CodingKeys: String, CodingKey {
         case id, content, isUser, timestamp, imageData, thinkingTime
     }

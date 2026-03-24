@@ -13,9 +13,9 @@ struct ChatSidebarView: View {
 
     // MARK: - Design tokens
 
-    private let bgColor = Color(red: 0.039, green: 0.059, blue: 0.110)
-    private let cardColor = Color(red: 0.118, green: 0.161, blue: 0.231)
-    private let secondaryText = Color(red: 0.580, green: 0.639, blue: 0.722)
+    private var bgColor: Color { AppColors.background }
+    private var cardColor: Color { AppColors.cardBackground }
+    private var secondaryText: Color { AppColors.secondaryText }
     private let accentCyan = Color(red: 0.024, green: 0.714, blue: 0.831)
     private let accentBlue = Color(red: 0.231, green: 0.510, blue: 0.965)
     private let deleteRed = Color(red: 0.937, green: 0.267, blue: 0.267)
@@ -34,6 +34,8 @@ struct ChatSidebarView: View {
 
     private let categoryItems: [CategoryItem] = [
         CategoryItem(id: .chat, label: "Chat", icon: "message.fill"),
+        CategoryItem(id: .math, label: "Math", icon: "function"),
+        CategoryItem(id: .rag, label: "RAG", icon: "doc.text.magnifyingglass"),
         CategoryItem(id: .extract, label: "Extract", icon: "doc.text"),
         CategoryItem(id: .translate, label: "Translator", icon: "character.book.closed"),
         CategoryItem(id: .audio, label: "Audio", icon: "mic"),
@@ -160,34 +162,59 @@ struct ChatSidebarView: View {
                     .padding(.vertical, 12)
             } else {
                 VStack(spacing: 0) {
-                    ForEach(recentChatStore.recentChats) { chat in
-                        Button {
-                            close()
-                            onSelectChat(chat)
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "circle")
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(secondaryText)
+                    ForEach(recentChatStore.activeChats) { chat in
+                        HStack(spacing: 0) {
+                            Button {
+                                close()
+                                onSelectChat(chat)
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: iconForCategory(chat.category))
+                                        .font(.system(size: 14))
+                                        .foregroundStyle(colorForCategory(chat.category))
 
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(chat.title)
-                                        .font(.system(size: 15))
-                                        .foregroundStyle(.white)
-                                        .lineLimit(1)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        HStack(spacing: 6) {
+                                            Text(chat.title)
+                                                .font(.system(size: 15))
+                                                .foregroundStyle(.white)
+                                                .lineLimit(1)
+                                            if let cat = chat.category, !cat.isEmpty,
+                                               cat != ModelCategory.chat.rawValue {
+                                                Text(labelForCategory(cat))
+                                                    .font(.system(size: 9, weight: .bold))
+                                                    .foregroundStyle(colorForCategory(cat))
+                                                    .padding(.horizontal, 5)
+                                                    .padding(.vertical, 1)
+                                                    .background(colorForCategory(cat).opacity(0.2))
+                                                    .clipShape(Capsule())
+                                            }
+                                        }
 
-                                    Text(chat.timeAgo)
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(secondaryText)
+                                        Text(chat.timeAgo)
+                                            .font(.system(size: 12))
+                                            .foregroundStyle(secondaryText)
+                                    }
+
+                                    Spacer()
                                 }
-
-                                Spacer()
+                                .contentShape(Rectangle())
                             }
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 16)
-                            .contentShape(Rectangle())
+                            .buttonStyle(.plain)
+
+                            // Delete button
+                            Button {
+                                recentChatStore.deleteChat(id: chat.id)
+                            } label: {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(deleteRed)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.trailing, 4)
                         }
-                        .buttonStyle(.plain)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
                     }
                 }
             }
@@ -244,6 +271,43 @@ struct ChatSidebarView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Category Helpers
+
+    private func iconForCategory(_ category: String?) -> String {
+        guard let cat = category else { return "circle" }
+        switch cat {
+        case ModelCategory.math.rawValue: return "function"
+        case ModelCategory.rag.rawValue: return "doc.text.magnifyingglass"
+        case ModelCategory.vision.rawValue: return "eye"
+        case ModelCategory.ocr.rawValue: return "doc.text.viewfinder"
+        case ModelCategory.translate.rawValue: return "character.book.closed"
+        case ModelCategory.extract.rawValue: return "doc.text"
+        case ModelCategory.audio.rawValue: return "mic"
+        default: return "message"
+        }
+    }
+
+    private func colorForCategory(_ category: String?) -> Color {
+        guard let cat = category else { return secondaryText }
+        switch cat {
+        case ModelCategory.math.rawValue: return .purple
+        case ModelCategory.rag.rawValue: return .cyan
+        default: return secondaryText
+        }
+    }
+
+    private func labelForCategory(_ category: String) -> String {
+        switch category {
+        case ModelCategory.math.rawValue: return "Math"
+        case ModelCategory.rag.rawValue: return "RAG"
+        case ModelCategory.vision.rawValue: return "Vision"
+        case ModelCategory.ocr.rawValue: return "OCR"
+        case ModelCategory.translate.rawValue: return "Translate"
+        case ModelCategory.extract.rawValue: return "Extract"
+        default: return ""
+        }
     }
 
     // MARK: - Actions

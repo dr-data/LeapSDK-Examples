@@ -3,11 +3,13 @@ import SwiftUI
 struct LocalModelsBrowserView: View {
     @Environment(ModelStore.self) private var modelStore
     @Binding var path: NavigationPath
+    @State private var showDeleteAlert = false
+    @State private var modelToDelete: ModelDefinition?
 
-    private let bgColor = Color(red: 0.039, green: 0.059, blue: 0.110)
-    private let cardColor = Color(red: 0.118, green: 0.161, blue: 0.231)
-    private let secondaryText = Color(red: 0.580, green: 0.639, blue: 0.722)
-    private let accentBlue = Color(red: 0.231, green: 0.510, blue: 0.965)
+    private var bgColor: Color { AppColors.background }
+    private var cardColor: Color { AppColors.cardBackground }
+    private var secondaryText: Color { AppColors.secondaryText }
+    private let accentBlue = AppColors.accentBlue
     private let greenColor = Color(red: 0.133, green: 0.773, blue: 0.369)
 
     var body: some View {
@@ -42,6 +44,18 @@ struct LocalModelsBrowserView: View {
                 Text("Local Models")
                     .font(.system(size: 17, weight: .bold))
                     .foregroundColor(.white)
+            }
+        }
+        .alert("Delete Model", isPresented: $showDeleteAlert) {
+            Button("Delete", role: .destructive) {
+                if let model = modelToDelete, let quant = model.quantizations.first {
+                    modelStore.deleteModel(model: model, quantization: quant)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            if let model = modelToDelete {
+                Text("Delete \(model.name)? This will free up disk space. You can re-download it later.")
             }
         }
     }
@@ -115,9 +129,26 @@ struct LocalModelsBrowserView: View {
             Spacer()
 
             if isDownloaded {
-                Text("Downloaded")
-                    .font(.system(size: 13))
-                    .foregroundColor(greenColor)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("Downloaded")
+                        .font(.system(size: 13))
+                        .foregroundColor(greenColor)
+                    if let size = modelStore.modelFileSize(model: model, quantization: model.quantizations.first!) {
+                        Text(size)
+                            .font(.system(size: 11))
+                            .foregroundColor(secondaryText)
+                    }
+                }
+
+                Button {
+                    modelToDelete = model
+                    showDeleteAlert = true
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 14))
+                        .foregroundColor(.red)
+                }
+                .buttonStyle(.plain)
             }
         }
         .padding(.horizontal, 16)

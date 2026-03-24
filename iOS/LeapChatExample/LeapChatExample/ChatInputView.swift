@@ -4,11 +4,14 @@ import SwiftUI
 struct ChatInputView: View {
     @Bindable var store: ChatStore
     @State private var selectedImage: PhotosPickerItem?
+    @Environment(ModelStore.self) private var modelStore
+    var syncGate: SyncGate?
+    var syncManager: SyncManager?
 
-    private let bgColor = Color(red: 0.039, green: 0.059, blue: 0.110)
-    private let cardColor = Color(red: 0.118, green: 0.161, blue: 0.231)
-    private let secondaryText = Color(red: 0.580, green: 0.639, blue: 0.722)
-    private let accentBlue = Color(red: 0.231, green: 0.510, blue: 0.965)
+    private var bgColor: Color { AppColors.background }
+    private var cardColor: Color { AppColors.cardBackground }
+    private var secondaryText: Color { AppColors.secondaryText }
+    private let accentBlue = AppColors.accentBlue
 
     private var canSend: Bool {
         (!store.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -18,6 +21,15 @@ struct ChatInputView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // Show sync barrier when blocked
+            if let gate = syncGate, gate.isBlocked {
+                SyncBarrierView()
+            }
+
+            if modelStore.isGLMOCRActive || modelStore.isPaddleOCRActive {
+                ocrTaskPicker
+            }
+
             if store.isImageLoading {
                 HStack {
                     ProgressView()
@@ -67,20 +79,30 @@ struct ChatInputView: View {
                     }
                 }
 
-                HStack(spacing: 8) {
-                    TextField("Message", text: $store.input)
-                        .font(.system(size: 16))
-                        .foregroundColor(.white)
-                        .disabled(store.isLoading)
-                        .accessibilityIdentifier("messageTextField")
-                        .submitLabel(.send)
-                        .onSubmit {
+                HStack(alignment: .bottom, spacing: 8) {
+                    ExpandableTextInput(
+                        text: $store.input,
+                        isDisabled: store.isLoading,
+                        onSubmit: {
                             if canSend && !store.isLoading {
                                 Task { await store.send() }
                             }
                         }
+                    )
+                    .accessibilityIdentifier("messageTextField")
 
-                    if canSend && !store.isLoading {
+                    if store.isLoading {
+                        // Stop button during generation
+                        Button {
+                            store.stopGenerating()
+                        } label: {
+                            Image(systemName: "stop.circle.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.red)
+                        }
+                        .accessibilityIdentifier("stopButton")
+                        .padding(.bottom, 2)
+                    } else if canSend {
                         Button {
                             Task { await store.send() }
                         } label: {
@@ -89,10 +111,11 @@ struct ChatInputView: View {
                                 .foregroundColor(accentBlue)
                         }
                         .accessibilityIdentifier("sendButton")
+                        .padding(.bottom, 2)
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.vertical, 6)
                 .background(cardColor)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
 
@@ -119,5 +142,101 @@ struct ChatInputView: View {
             .padding(.horizontal, 20)
         }
         .background(bgColor)
+    }
+
+    private var ocrTaskOptions: [(OCRTask, String)] {
+        var options: [(OCRTask, String)] = [
+            (.text, "Text"), (.table, "Table"), (.formula, "Formula"),
+        ]
+        if modelStore.isPaddleOCRActive {
+            options.append((.handwriting, "Handwriting"))
+            options.append((.documentLayout, "Layout"))
+        }
+        return options
+    }
+
+    @ViewBuilder
+    private var ocrTaskPicker: some View {
+        HStack(spacing: 8) {
+            Text("OCR Mode:")
+                .font(.system(size: 13))
+                .foregroundColor(secondaryText)
+
+            ForEach(ocrTaskOptions, id: \.1) { task, label in
+                Button {
+                    store.ocrTask = task
+                } label: {
+                    Text(label)
+                        .font(.system(size: 13, weight: store.ocrTask == task ? .semibold : .regular))
+                        .foregroundColor(store.ocrTask == task ? .white : secondaryText)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(store.ocrTask == task ? accentBlue : cardColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+            }
+
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
+    }
+}
+
+// MARK: - Expandable Text Input
+
+struct ExpandableTextInput: View {
+    @Binding var text: String
+    var isDisabled: Bool = false
+    var onSubmit: () -> Void = {}
+
+    @State private var textHeight: CGFloat = 36
+
+    private let minHeight: CGFloat = 36
+    private let maxHeight: CGFloat = 120
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            // Placeholder
+            if text.isEmpty {
+                Text("Message")
+                    .font(.system(size: 16))
+                    .foregroundColor(Color(red: 0.580, green: 0.639, blue: 0.722))
+                    .padding(.top, 8)
+                    .padding(.leading, 4)
+            }
+
+            // Hidden text for height calculation
+            Text(text.isEmpty ? " " : text)
+                .font(.system(size: 16))
+                .foregroundColor(.clear)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 4)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear.preference(key: TextHeightKey.self, value: geo.size.height)
+                    }
+                )
+
+            // Actual TextEditor
+            TextEditor(text: $text)
+                .font(.system(size: 16))
+                .foregroundColor(AppColors.primaryText)
+                .scrollContentBackground(.hidden)
+                .disabled(isDisabled)
+                .frame(height: min(max(textHeight, minHeight), maxHeight))
+                .padding(.horizontal, -1)
+        }
+        .onPreferenceChange(TextHeightKey.self) { height in
+            textHeight = height
+        }
+    }
+}
+
+private struct TextHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 36
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }

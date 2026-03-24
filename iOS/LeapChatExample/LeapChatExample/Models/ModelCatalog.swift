@@ -2,6 +2,8 @@ import Foundation
 
 enum ModelCategory: String, CaseIterable, Identifiable {
     case chat = "Chat models"
+    case math = "Math Models"
+    case rag = "RAG Models"
     case translate = "Translate Models"
     case extract = "Extract Models"
     case audio = "Audio Models"
@@ -36,12 +38,17 @@ struct ModelDefinition: Identifiable, Hashable {
     let huggingFaceRepo: String?
     let isMLX: Bool
     let useDirectLlamaCpp: Bool
+    let isGLMOCR: Bool
+    let isPaddleOCR: Bool
+    let paddleOCRBackend: String?  // "onnx" or "coreml"
 
     init(
         id: String, name: String, provider: String, parameterCount: String,
         category: ModelCategory, description: String,
         quantizations: [QuantizationOption], huggingFaceRepo: String? = nil,
-        isMLX: Bool = false, useDirectLlamaCpp: Bool = false
+        isMLX: Bool = false, useDirectLlamaCpp: Bool = false,
+        isGLMOCR: Bool = false,
+        isPaddleOCR: Bool = false, paddleOCRBackend: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -53,6 +60,9 @@ struct ModelDefinition: Identifiable, Hashable {
         self.huggingFaceRepo = huggingFaceRepo
         self.isMLX = isMLX
         self.useDirectLlamaCpp = useDirectLlamaCpp
+        self.isGLMOCR = isGLMOCR
+        self.isPaddleOCR = isPaddleOCR
+        self.paddleOCRBackend = paddleOCRBackend
     }
 
     func hash(into hasher: inout Hasher) {
@@ -160,11 +170,13 @@ enum ModelCatalog {
                 QuantizationOption(name: "Q8_0", fileSize: "1.2 GB"),
             ],
             huggingFaceRepo: "LiquidAI/LFM2.5-1.2B-Thinking-GGUF"),
+
+        // Qwen models (available on LEAP platform via Leap.load())
         ModelDefinition(
             id: "Qwen3-0.6B", name: "Qwen3-0.6B", provider: "Qwen",
             parameterCount: "0.6B", category: .chat,
             description:
-                "Compact Qwen3 model for lightweight on-device chat applications.",
+                "Compact Qwen3 model for lightweight on-device chat via LEAP platform.",
             quantizations: [
                 QuantizationOption(name: "Q4_0", fileSize: "400 MB"),
                 QuantizationOption(name: "Q4_K_M", fileSize: "420 MB"),
@@ -175,13 +187,38 @@ enum ModelCatalog {
             id: "Qwen3-1.7B", name: "Qwen3-1.7B", provider: "Qwen",
             parameterCount: "1.7B", category: .chat,
             description:
-                "Mid-size Qwen3 model with strong multilingual capabilities.",
+                "Mid-size Qwen3 model with strong multilingual capabilities via LEAP platform.",
             quantizations: [
                 QuantizationOption(name: "Q4_0", fileSize: "950 MB"),
                 QuantizationOption(name: "Q4_K_M", fileSize: "1.0 GB"),
                 QuantizationOption(name: "Q8_0", fileSize: "1.7 GB"),
             ],
             huggingFaceRepo: "Qwen/Qwen3-1.7B-GGUF"),
+
+        // Math models
+        ModelDefinition(
+            id: "LFM2-350M-Math", name: "LFM2-350M-Math", provider: "LiquidAI",
+            parameterCount: "350M", category: .math,
+            description:
+                "Math reasoning model based on LFM2-350M with 32K context window. Optimized for mathematical problem solving, step-by-step reasoning, and edge deployment.",
+            quantizations: [
+                QuantizationOption(name: "Q4_K_M", fileSize: "220 MB"),
+                QuantizationOption(name: "Q8_0", fileSize: "350 MB"),
+            ],
+            huggingFaceRepo: "LiquidAI/LFM2-350M-Math-GGUF"),
+
+        // RAG models
+        ModelDefinition(
+            id: "LFM2-1.2B-RAG", name: "LFM2-1.2B-RAG", provider: "LiquidAI",
+            parameterCount: "1.2B", category: .rag,
+            description:
+                "RAG-optimized model based on LFM2-1.2B with 32K context window. Designed for retrieval-augmented generation with document extraction, supporting XML-tagged document inputs.",
+            quantizations: [
+                QuantizationOption(name: "Q4_0", fileSize: "663.5 MB"),
+                QuantizationOption(name: "Q4_K_M", fileSize: "697 MB"),
+                QuantizationOption(name: "Q8_0", fileSize: "1.2 GB"),
+            ],
+            huggingFaceRepo: "LiquidAI/LFM2-1.2B-RAG-GGUF"),
 
         // Translate models
         ModelDefinition(
@@ -272,29 +309,30 @@ enum ModelCatalog {
             id: "GLM-OCR", name: "GLM-OCR", provider: "ZAI",
             parameterCount: "0.9B", category: .ocr,
             description:
-                "GLM-OCR is a multimodal OCR model for complex document understanding, ranked #1 on OmniDocBench. Features a CogViT visual encoder and GLM-0.5B language decoder, optimized for tables, code-heavy documents, and real-world OCR scenarios with only 0.9B parameters.",
+                "GLM-OCR via MLX Swift. Multimodal OCR model for complex document understanding, ranked #1 on OmniDocBench. Features a CogViT visual encoder and GLM-0.5B language decoder, optimized for tables, code-heavy documents, and real-world OCR scenarios.",
             quantizations: [
-                QuantizationOption(
-                    name: "Q8_0", fileSize: "950 MB",
-                    downloadURL: "https://huggingface.co/ggml-org/GLM-OCR-GGUF/resolve/main/GLM-OCR-Q8_0.gguf"),
-                QuantizationOption(
-                    name: "f16", fileSize: "1.79 GB",
-                    downloadURL: "https://huggingface.co/ggml-org/GLM-OCR-GGUF/resolve/main/GLM-OCR-f16.gguf"),
+                QuantizationOption(name: "safetensors", fileSize: "~1.8 GB"),
             ],
-            huggingFaceRepo: "ggml-org/GLM-OCR-GGUF"),
-        // GLM-OCR via direct llama.cpp — uses bundled inference engine, bypasses LeapSDK registry
+            huggingFaceRepo: "zai-org/GLM-OCR",
+            isGLMOCR: true),
         ModelDefinition(
-            id: "GLM-OCR-Direct", name: "GLM-OCR", provider: "ZAI",
-            parameterCount: "0.9B", category: .ocr,
+            id: "PP-OCRv5-Mobile-ONNX", name: "PP-OCRv5 Mobile (ONNX)", provider: "PaddlePaddle",
+            parameterCount: "~4M", category: .ocr,
             description:
-                "GLM-OCR loaded directly via llama.cpp. Multimodal OCR model for complex document understanding, ranked #1 on OmniDocBench. Download from HuggingFace and run inference using the bundled llama.cpp engine.",
+                "PP-OCRv5 server detector + PP-OCRv5 English recognizer. ONNX Runtime with CoreML acceleration. ~96MB total.",
             quantizations: [
-                QuantizationOption(
-                    name: "Q8_0", fileSize: "950 MB",
-                    downloadURL: "https://huggingface.co/ggml-org/GLM-OCR-GGUF/resolve/main/GLM-OCR-Q8_0.gguf"),
+                QuantizationOption(name: "fp32", fileSize: "~96 MB"),
             ],
-            huggingFaceRepo: "ggml-org/GLM-OCR-GGUF",
-            useDirectLlamaCpp: true),
+            huggingFaceRepo: "monkt/paddleocr-onnx",
+            isPaddleOCR: true, paddleOCRBackend: "onnx"),
+        ModelDefinition(
+            id: "Apple-Vision-OCR", name: "Apple Vision OCR", provider: "Apple",
+            parameterCount: "Built-in", category: .ocr,
+            description:
+                "Built-in iOS text recognition using Apple Vision framework. No download required. Supports English, Chinese, Japanese, Korean, and more.",
+            quantizations: [
+                QuantizationOption(name: "built-in", fileSize: "0 MB"),
+            ]),
     ]
 
     static func models(for category: ModelCategory) -> [ModelDefinition] {

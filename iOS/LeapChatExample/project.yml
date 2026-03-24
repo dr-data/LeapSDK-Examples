@@ -18,6 +18,21 @@ settings:
 packages:
   LeapSDK:
     path: ..
+  mlx-swift:
+    url: "https://github.com/ml-explore/mlx-swift"
+    minorVersion: "0.30.3"
+  swift-transformers:
+    url: "https://github.com/huggingface/swift-transformers"
+    minorVersion: "1.1.6"
+  onnxruntime:
+    url: "https://github.com/microsoft/onnxruntime-swift-package-manager"
+    from: "1.18.0"
+  ZIPFoundation:
+    url: "https://github.com/weichsel/ZIPFoundation.git"
+    from: "0.9.0"
+  AEXML:
+    url: "https://github.com/tadija/AEXML.git"
+    from: "4.6.0"
 
 targets:
   LeapChatExample:
@@ -43,15 +58,33 @@ targets:
         product: LeapModelDownloader
       - package: LeapSDK
         product: MLXSupport
+      - package: mlx-swift
+        product: MLXNN
+      - package: swift-transformers
+        product: Tokenizers
+      - package: swift-transformers
+        product: Hub
+      - package: onnxruntime
+        product: onnxruntime
+      - package: ZIPFoundation
+        product: ZIPFoundation
+      - package: AEXML
+        product: AEXML
+    entitlements:
+      path: LeapChatExample/LeapChatExample.entitlements
+      properties:
+        com.apple.developer.kernel.increased-memory-limit: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ai.liquid.LeapChatExample
+        PRODUCT_BUNDLE_IDENTIFIER: college.3rd.LeapChatExample
         INFOPLIST_FILE: Resources/Info.plist
+        SWIFT_OBJC_BRIDGING_HEADER: LeapChatExample/LlamaCppBridge.h
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_VERSION: "5.9"
         IPHONEOS_DEPLOYMENT_TARGET: "17.0"
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_IDENTITY: "Apple Development"
+        DEVELOPMENT_TEAM: PTYW3X8AU6
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
       configs:

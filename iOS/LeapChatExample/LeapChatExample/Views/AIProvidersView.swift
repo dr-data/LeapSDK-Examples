@@ -3,11 +3,12 @@ import SwiftUI
 struct AIProvidersView: View {
     @Binding var path: NavigationPath
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppSettings.self) private var appSettings
 
-    private let bgColor = Color(red: 0.039, green: 0.059, blue: 0.110)
-    private let cardColor = Color(red: 0.118, green: 0.161, blue: 0.231)
-    private let secondaryText = Color(red: 0.580, green: 0.639, blue: 0.722)
-    private let accentBlue = Color(red: 0.231, green: 0.510, blue: 0.965)
+    private var bgColor: Color { AppColors.background }
+    private var cardColor: Color { AppColors.cardBackground }
+    private var secondaryText: Color { AppColors.secondaryText }
+    private let accentBlue = AppColors.accentBlue
 
     var body: some View {
         ZStack {
@@ -17,6 +18,7 @@ struct AIProvidersView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     descriptionText
                     providersSection
+                    themeSection
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
@@ -90,6 +92,34 @@ struct AIProvidersView: View {
             .padding(.horizontal, 16)
             .frame(height: 50)
             .background(cardColor)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+    }
+
+    // MARK: - Theme Section
+
+    private var themeSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("APPEARANCE")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(secondaryText)
+                .tracking(0.5)
+
+            @Bindable var settings = appSettings
+            HStack(spacing: 0) {
+                ForEach(ThemeMode.allCases, id: \.self) { mode in
+                    Button {
+                        settings.themeMode = mode
+                    } label: {
+                        Text(mode.rawValue)
+                            .font(.system(size: 14, weight: settings.themeMode == mode ? .semibold : .regular))
+                            .foregroundColor(settings.themeMode == mode ? .white : secondaryText)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(settings.themeMode == mode ? accentBlue : cardColor)
+                    }
+                }
+            }
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }

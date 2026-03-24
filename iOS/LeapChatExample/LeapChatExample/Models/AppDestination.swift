@@ -9,4 +9,8 @@ enum AppDestination: Hashable {
     case customBackendEdit(CustomBackend?)
     case modelDetail(ModelDefinition)
     case modelDetailPopup(ModelDefinition)
+    case mathChat
+    case ragChat
+    case teacherDashboard
+    case adminPanel
 }
