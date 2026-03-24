@@ -68,8 +68,8 @@ struct SpecializedChatView: View {
                 } else if !isModelReady {
                     modelSelectionView
                 } else {
-                    // Show examples until user sends first message
-                    if !hasStartedChatting {
+                    // Show examples when no real conversation has started (only system message or empty)
+                    if store.messages.count <= 1 {
                         examplesView
                     }
                     // Document bar for RAG
@@ -565,6 +565,16 @@ enum SpecializedExamples {
             label: "Document Summary",
             icon: "doc.plaintext",
             prompt: "Please summarize the uploaded document(s). Highlight key points and cite specific sections using [Ref X] notation."
+        ),
+        ExamplePrompt(
+            label: "手寫中文辨識",
+            icon: "pencil.line",
+            prompt: "請辨識已上傳的手寫中文文件內容。將手寫文字轉錄為電子文字，標記不確定的字詞，並引用文件來源 [Ref X]。"
+        ),
+        ExamplePrompt(
+            label: "Handwriting OCR",
+            icon: "pencil",
+            prompt: "Please recognize and transcribe the handwritten English text from the uploaded document. Flag any uncertain characters and cite sources using [Ref X]."
         ),
     ]
 }

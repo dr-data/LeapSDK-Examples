@@ -1,3 +1,4 @@
+import Hub
 import LeapSDK
 import SwiftUI
 
@@ -110,14 +111,37 @@ class ModelStore: NSObject {
         return formatter.string(fromByteCount: size)
     }
 
+    // MARK: - Model Flags
+
+    /// Clear all backend flags — call at start of every load method
+    private func clearAllModelFlags() {
+        isMLXActive = false
+        isLlamaCppActive = false
+        isGLMOCRActive = false
+        isPaddleOCRActive = false
+        isAppleVisionOCRActive = false
+    }
+
     // MARK: - Download & Load
 
-    /// Context size based on model category — RAG/extract need larger context for documents
-    private func contextSize(for model: ModelDefinition) -> UInt32 {
+    /// Context size per model — larger models and RAG/math get more context
+    func contextSize(for model: ModelDefinition) -> UInt32 {
         switch model.category {
         case .rag, .extract:
-            return 16384  // 16K for document-heavy models (supports up to 32K)
+            return 16384
+        case .math:
+            return 8192
+        case .ocr:
+            // GLM-OCR supports 131K but we use 32K for practical on-device use
+            if model.id.contains("GLM") {
+                return 32768
+            }
+            return 4096
         default:
+            // Larger chat models get more context
+            if model.id.contains("2.6B") || model.id.contains("1.2B") || model.id.contains("1.7B") {
+                return 8192
+            }
             return 4096
         }
     }
@@ -128,16 +152,19 @@ class ModelStore: NSObject {
 
         // Apple Vision OCR — built-in, no download needed
         if model.id == "Apple-Vision-OCR" {
+            clearAllModelFlags()
             isAppleVisionOCRActive = true
-            isPaddleOCRActive = false
-            isGLMOCRActive = false
-            isMLXActive = false
-            isLlamaCppActive = false
             activeModel = model
             activeQuantization = quantization
             activeModelRunner = nil
             downloadStatuses[key] = .downloaded
             print("[ModelStore] Apple Vision OCR activated (built-in)")
+            return
+        }
+
+        // HuggingFace-only download (ONNX models, etc.)
+        if model.isHuggingFaceOnly {
+            await loadHuggingFaceOnly(model: model, quantization: quantization)
             return
         }
 
@@ -196,6 +223,7 @@ class ModelStore: NSObject {
                     }
                 }
 
+                clearAllModelFlags()
                 activeModelRunner = runner
                 activeModel = model
                 activeQuantization = quantization
@@ -264,10 +292,7 @@ class ModelStore: NSObject {
         let localPath = localModelPath(model: model, quantization: quantization)
 
         isLoading = true
-        isLlamaCppActive = false
-        isMLXActive = false
-        isPaddleOCRActive = false
-        isGLMOCRActive = false
+        clearAllModelFlags()
 
         // Download if not already present
         if !isModelFilePresent(model: model, quantization: quantization) {
@@ -332,6 +357,60 @@ class ModelStore: NSObject {
         isLoading = false
     }
 
+    // MARK: - HuggingFace-Only Download (ONNX models)
+
+    @MainActor
+    private func loadHuggingFaceOnly(model: ModelDefinition, quantization: QuantizationOption) async {
+        let key = downloadKey(model: model, quantization: quantization)
+        guard let repo = model.huggingFaceRepo else {
+            downloadStatuses[key] = .failed(message: "No HuggingFace repo specified")
+            return
+        }
+
+        clearAllModelFlags()
+        isLoading = true
+        loadingMessage = "Downloading \(model.name) from HuggingFace..."
+        downloadStatuses[key] = .downloading(progress: 0)
+
+        do {
+            let hub = HubApi(downloadBase: Self.modelsDirectory)
+            let hubRepo = Hub.Repo(id: repo)
+
+            // Download all files from the repo
+            let snapshotURL = try await hub.snapshot(from: hubRepo, matching: ["*"]) { progress in
+                Task { @MainActor in
+                    self.downloadStatuses[key] = .downloading(progress: progress.fractionCompleted)
+                    self.loadingMessage = progress.fractionCompleted < 1.0
+                        ? "Downloading: \(Int(progress.fractionCompleted * 100))%"
+                        : "Download complete"
+                }
+            }
+
+            activeModelRunner = nil
+            activeModel = model
+            activeQuantization = quantization
+            downloadStatuses[key] = .downloaded
+            loadingMessage = ""
+            print("[ModelStore] HuggingFace download complete: \(snapshotURL.path)")
+
+            // For ONNX OCR models, configure as Apple Vision OCR fallback for now
+            // until custom ONNX inference is implemented
+            isAppleVisionOCRActive = true
+            messages(model)
+        } catch {
+            downloadStatuses[key] = .failed(message: error.localizedDescription)
+            loadingMessage = "Download failed: \(error.localizedDescription)"
+            print("[ModelStore] HuggingFace download error: \(error)")
+        }
+
+        isLoading = false
+    }
+
+    private func messages(_ model: ModelDefinition) {
+        // placeholder for future ONNX inference integration
+        print("[ModelStore] \(model.name) downloaded. ONNX inference integration pending.")
+    }
+
     // MARK: - PaddleOCR Loading
 
     @MainActor
@@ -344,16 +423,14 @@ class ModelStore: NSObject {
 
         let backend: PaddleOCRBackend = model.paddleOCRBackend == "coreml" ? .coreml : .onnx
 
-        // Set PaddleOCR active BEFORE setting activeModel so onChange routes correctly
+        clearAllModelFlags()
         isPaddleOCRActive = true
-        isGLMOCRActive = false
-        isMLXActive = false
-        isLlamaCppActive = false
         isLoading = true
         loadingMessage = "Downloading \(model.name)..."
         downloadStatuses[key] = .downloading(progress: 0)
 
         do {
+            print("[PaddleOCR] Starting load: repo=\(repo), backend=\(backend)")
             try await paddleOCRService.load(backend: backend, huggingFaceRepo: repo) { [weak self] fraction in
                 Task { @MainActor in
                     self?.downloadStatuses[key] = .downloading(progress: fraction)
@@ -368,11 +445,13 @@ class ModelStore: NSObject {
             activeQuantization = quantization
             downloadStatuses[key] = .downloaded
             loadingMessage = ""
+            print("[PaddleOCR] Load SUCCESS")
         } catch {
             isPaddleOCRActive = false
             downloadStatuses[key] = .failed(message: error.localizedDescription)
             loadingMessage = "PaddleOCR load failed: \(error.localizedDescription)"
-            print("PaddleOCR load error: \(error)")
+            print("[PaddleOCR] Load FAILED: \(error)")
+            print("[PaddleOCR] Error details: \(String(describing: error))")
         }
 
         isLoading = false
@@ -388,11 +467,8 @@ class ModelStore: NSObject {
             return
         }
 
-        // Set GLM-OCR active BEFORE setting activeModel so onChange routes correctly
+        clearAllModelFlags()
         isGLMOCRActive = true
-        isPaddleOCRActive = false
-        isMLXActive = false
-        isLlamaCppActive = false
         isLoading = true
         loadingMessage = "Downloading \(model.name) via MLX..."
         downloadStatuses[key] = .downloading(progress: 0)
@@ -432,11 +508,8 @@ class ModelStore: NSObject {
             return
         }
 
-        // Set MLX active BEFORE setting activeModel so onChange routes correctly
+        clearAllModelFlags()
         isMLXActive = true
-        isPaddleOCRActive = false
-        isGLMOCRActive = false
-        isLlamaCppActive = false
         isLoading = true
         loadingMessage = "Downloading \(model.name) via MLX..."
         downloadStatuses[key] = .downloading(progress: 0)

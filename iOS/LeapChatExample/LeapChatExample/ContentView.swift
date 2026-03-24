@@ -35,6 +35,10 @@ struct ContentView: View {
         modelStore.activeQuantization?.name ?? ""
     }
 
+    private var isOCRActive: Bool {
+        modelStore.isGLMOCRActive || modelStore.isPaddleOCRActive || modelStore.isAppleVisionOCRActive
+    }
+
     var body: some View {
         ZStack {
             bgColor.ignoresSafeArea()
@@ -45,6 +49,10 @@ struct ContentView: View {
                 if modelStore.activeModel == nil {
                     noModelSelectedView
                 } else {
+                    // OCR example buttons when an OCR model is active
+                    if isOCRActive && store.messages.count <= 1 {
+                        ocrExamplesView
+                    }
                     MessagesListView(store: store)
                     ChatInputView(store: store, syncGate: syncGate, syncManager: syncManager)
                 }
@@ -150,12 +158,42 @@ struct ContentView: View {
                     systemPrompt: promptStore.systemPrompt
                 )
             } else if let runner = modelStore.activeModelRunner {
+                let ctxSize = modelStore.activeModel.map { Int(modelStore.contextSize(for: $0)) } ?? 4096
                 store.configureWithModel(
                     runner: runner,
-                    systemPrompt: promptStore.systemPrompt
+                    systemPrompt: promptStore.systemPrompt,
+                    contextSize: ctxSize
                 )
-            } else if modelStore.activeModel != nil {
-                store.configureWithoutRunner(systemPrompt: promptStore.systemPrompt)
+            } else if let model = modelStore.activeModel {
+                // VL models may fail Leap.load() but work via MLX fallback
+                if model.category == .vision && modelStore.mlxService.isLoaded {
+                    store.configureWithMLX(
+                        service: modelStore.mlxService,
+                        systemPrompt: promptStore.systemPrompt
+                    )
+                } else if model.category == .vision && modelStore.llamaCppService.isLoaded {
+                    store.configureWithLlamaCpp(
+                        service: modelStore.llamaCppService,
+                        systemPrompt: promptStore.systemPrompt
+                    )
+                } else {
+                    // Try to reload the model via a fallback path
+                    print("[ContentView] WARNING: No runner for \(model.name). Attempting MLX load...")
+                    Task {
+                        if let quant = modelStore.activeQuantization {
+                            // Force reload through MLX path
+                            modelStore.isMLXActive = true
+                            await modelStore.downloadAndLoad(model: model, quantization: quant)
+                            if modelStore.isMLXActive, modelStore.mlxService.isLoaded {
+                                store.configureWithMLX(service: modelStore.mlxService, systemPrompt: promptStore.systemPrompt)
+                            } else {
+                                store.configureWithoutRunner(systemPrompt: promptStore.systemPrompt)
+                            }
+                        } else {
+                            store.configureWithoutRunner(systemPrompt: promptStore.systemPrompt)
+                        }
+                    }
+                }
             }
         }
     }
@@ -299,6 +337,42 @@ struct ContentView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - OCR Examples
+
+    private var ocrExamplesView: some View {
+        VStack(spacing: 6) {
+            Text("Try an example image:")
+                .font(.system(size: 12))
+                .foregroundColor(secondaryText)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(OCRExampleGenerator.examples) { example in
+                        Button {
+                            let image = example.generator()
+                            store.attachedImage = image
+                            Task { await store.send() }
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: example.icon)
+                                    .font(.system(size: 11))
+                                Text(example.label)
+                                    .font(.system(size: 12))
+                            }
+                            .foregroundColor(AppColors.primaryText)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
+                            .background(AppColors.cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+        .padding(.vertical, 6)
     }
 }
 

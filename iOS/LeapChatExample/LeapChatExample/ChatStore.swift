@@ -33,6 +33,10 @@ class ChatStore {
     var syncManager: SyncManager?
     var studentAccountId: UUID?
 
+    // Token tracking
+    var estimatedTokensUsed: Int = 0
+    var contextWindowSize: Int = 4096
+
     // Generation control
     @ObservationIgnored private var generationTask: Task<Void, Never>?
 
@@ -41,12 +45,37 @@ class ChatStore {
     @ObservationIgnored private var lastUIUpdate = Date.distantPast
     @ObservationIgnored private let updateInterval: TimeInterval = 1.0 / 30.0 // 30fps max
 
-    @MainActor
-    func configureWithModel(runner: ModelRunner, systemPrompt: String?) {
-        modelRunner = runner
+    /// Clear all service references — must be called at the start of every configure method
+    private func clearAllServices() {
+        conversation = nil
+        modelRunner = nil
+        mlxService = nil
+        llamaCppService = nil
+        glmocrService = nil
+        paddleOCRService = nil
+        appleVisionOCRService = nil
+        systemPromptForMLX = nil
         messages.removeAll()
         hasRecordedChat = false
         currentChatId = nil
+        estimatedTokensUsed = 0
+    }
+
+    /// Estimate tokens used based on character count (~4 chars per token for English, ~2 for Chinese)
+    func updateTokenEstimate() {
+        var totalChars = 0
+        for msg in messages {
+            totalChars += msg.content.count
+        }
+        // Rough estimate: ~4 chars per token for English, ~1.5 for CJK
+        estimatedTokensUsed = max(totalChars / 3, messages.count * 5)
+    }
+
+    @MainActor
+    func configureWithModel(runner: ModelRunner, systemPrompt: String?, contextSize: Int = 4096) {
+        clearAllServices()
+        contextWindowSize = contextSize
+        modelRunner = runner
 
         var history: [ChatMessage] = []
         if let systemPrompt, !systemPrompt.isEmpty {
@@ -60,11 +89,7 @@ class ChatStore {
 
     @MainActor
     func configureWithoutRunner(systemPrompt: String?) {
-        modelRunner = nil
-        conversation = nil
-        messages.removeAll()
-        hasRecordedChat = false
-        currentChatId = nil
+        clearAllServices()
         messages.append(
             MessageBubble(
                 content:
@@ -74,46 +99,27 @@ class ChatStore {
 
     @MainActor
     func configureWithMLX(service: MLXModelService, systemPrompt: String?) {
+        clearAllServices()
         mlxService = service
-        conversation = nil
-        modelRunner = nil
         systemPromptForMLX = systemPrompt
-        messages.removeAll()
-        hasRecordedChat = false
-        currentChatId = nil
         messages.append(
             MessageBubble(content: "MLX model loaded. You can start chatting.", isUser: false))
     }
 
     @MainActor
     func configureWithLlamaCpp(service: LlamaCppService, systemPrompt: String?) {
+        clearAllServices()
         llamaCppService = service
-        mlxService = nil
-        glmocrService = nil
-        paddleOCRService = nil
-        conversation = nil
-        modelRunner = nil
         systemPromptForMLX = systemPrompt
-        messages.removeAll()
-        hasRecordedChat = false
-        currentChatId = nil
         messages.append(
             MessageBubble(content: "Model loaded via llama.cpp. You can start chatting.", isUser: false))
     }
 
     @MainActor
     func configureWithGLMOCR(service: GLMOCRService) {
+        clearAllServices()
         glmocrService = service
-        paddleOCRService = nil
-        llamaCppService = nil
-        mlxService = nil
-        conversation = nil
-        modelRunner = nil
-        systemPromptForMLX = nil
         ocrTask = .text
-        messages.removeAll()
-        hasRecordedChat = false
-        currentChatId = nil
         messages.append(
             MessageBubble(
                 content: "GLM-OCR model loaded. Attach an image and send to extract text. You can also type a custom instruction.",
@@ -122,17 +128,9 @@ class ChatStore {
 
     @MainActor
     func configureWithPaddleOCR(service: PaddleOCRService) {
+        clearAllServices()
         paddleOCRService = service
-        glmocrService = nil
-        llamaCppService = nil
-        mlxService = nil
-        conversation = nil
-        modelRunner = nil
-        systemPromptForMLX = nil
         ocrTask = .text
-        messages.removeAll()
-        hasRecordedChat = false
-        currentChatId = nil
         messages.append(
             MessageBubble(
                 content: "PP-OCRv5 model loaded. Attach an image and send to extract text. Supports multilingual text detection and recognition.",
@@ -141,18 +139,9 @@ class ChatStore {
 
     @MainActor
     func configureWithAppleVisionOCR(service: AppleVisionOCRService) {
+        clearAllServices()
         appleVisionOCRService = service
-        paddleOCRService = nil
-        glmocrService = nil
-        llamaCppService = nil
-        mlxService = nil
-        conversation = nil
-        modelRunner = nil
-        systemPromptForMLX = nil
         ocrTask = .text
-        messages.removeAll()
-        hasRecordedChat = false
-        currentChatId = nil
         messages.append(
             MessageBubble(
                 content: "Apple Vision OCR ready. Attach an image and send to extract text. Supports English, Chinese, Japanese, Korean, and more. No download required.",
@@ -663,6 +652,7 @@ class ChatStore {
     private func persistMessages() {
         guard let chatId = currentChatId else { return }
         onMessagesChanged?(chatId, messages)
+        updateTokenEstimate()
 
         // Persist any new messages for sync tracking (idempotent)
         for (index, bubble) in messages.enumerated() {

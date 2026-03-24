@@ -13,6 +13,7 @@
 		04995BCA502EE59C9FD45D53 /* AdminPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B37856CDE874E299B834D2 /* AdminPanelView.swift */; };
 		082714FC9C98D7D68F78DEBE /* GLMOCRFusion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76FC0FA2627F44CF9E2E3479 /* GLMOCRFusion.swift */; };
 		08C11B292B42DA210825FA4E /* GLMOCRChatTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A102630E2A1F1E1E1CAB4D7 /* GLMOCRChatTemplate.swift */; };
+		0B4F1EBD38F0716AF721544C /* OCRExampleGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 597A7F76EE693703F2882B62 /* OCRExampleGenerator.swift */; };
 		0BECF59D082DAAC933F9C2E1 /* StudentConversationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE385BE6A8C59512EEDFF0A /* StudentConversationsView.swift */; };
 		0C1683D91A693A513C07B4B9 /* LeapChatExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F1E85EB50C7B32C4E4DD2F /* LeapChatExampleTests.swift */; };
 		0DF538BE48D3580B08DEB9F9 /* ModelSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 620195B9C5FDD9D08F6AE73D /* ModelSelectorView.swift */; };
@@ -180,6 +181,7 @@
 		51C11745FB5DB7F58A53F9D5 /* LeapChatExampleUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeapChatExampleUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		567FB5E79EBB691821E30812 /* SendableCIImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendableCIImage.swift; sourceTree = "<group>"; };
 		56861875004E0A7A1EFDBBA9 /* ModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelCatalog.swift; sourceTree = "<group>"; };
+		597A7F76EE693703F2882B62 /* OCRExampleGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRExampleGenerator.swift; sourceTree = "<group>"; };
 		5A5526F46049410BE90162B5 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		5D7424DE5064E819673D607B /* ModelDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailView.swift; sourceTree = "<group>"; };
 		620195B9C5FDD9D08F6AE73D /* ModelSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSelectorView.swift; sourceTree = "<group>"; };
@@ -328,6 +330,7 @@
 				67539F1929698F0BD9DF38F1 /* LlamaCppService.swift */,
 				75BFA5C52463A74165C388DB /* MLXModelService.swift */,
 				84F73A32815176A558E8A903 /* ModelStore.swift */,
+				597A7F76EE693703F2882B62 /* OCRExampleGenerator.swift */,
 				D669CCD4D15FE892844ABBDA /* PromptStore.swift */,
 				B1837C793062E20F0E784CB4 /* RecentChatStore.swift */,
 				646F4DDD0BD58134CF2819F8 /* SyncGate.swift */,
@@ -736,6 +739,7 @@
 				0DF538BE48D3580B08DEB9F9 /* ModelSelectorView.swift in Sources */,
 				108D35713EAA8CA57A3C21AA /* ModelStore.swift in Sources */,
 				347B899E2ED97A1E47AE65E8 /* OCRDocumentTypes.swift in Sources */,
+				0B4F1EBD38F0716AF721544C /* OCRExampleGenerator.swift in Sources */,
 				2C691F0DD0E6100903EAB3BC /* OCRTypes.swift in Sources */,
 				A7FB738C6E7CAB87EB0660BA /* OpenRouterConfigView.swift in Sources */,
 				6A4FABEE50585E0FCA129544 /* PDFPagesSpec.swift in Sources */,

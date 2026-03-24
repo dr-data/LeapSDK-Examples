@@ -41,6 +41,7 @@ struct ModelDefinition: Identifiable, Hashable {
     let isGLMOCR: Bool
     let isPaddleOCR: Bool
     let paddleOCRBackend: String?  // "onnx" or "coreml"
+    let isHuggingFaceOnly: Bool    // download-only from HuggingFace Hub (no Leap.load)
 
     init(
         id: String, name: String, provider: String, parameterCount: String,
@@ -48,7 +49,8 @@ struct ModelDefinition: Identifiable, Hashable {
         quantizations: [QuantizationOption], huggingFaceRepo: String? = nil,
         isMLX: Bool = false, useDirectLlamaCpp: Bool = false,
         isGLMOCR: Bool = false,
-        isPaddleOCR: Bool = false, paddleOCRBackend: String? = nil
+        isPaddleOCR: Bool = false, paddleOCRBackend: String? = nil,
+        isHuggingFaceOnly: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -63,6 +65,7 @@ struct ModelDefinition: Identifiable, Hashable {
         self.isGLMOCR = isGLMOCR
         self.isPaddleOCR = isPaddleOCR
         self.paddleOCRBackend = paddleOCRBackend
+        self.isHuggingFaceOnly = isHuggingFaceOnly
     }
 
     func hash(into hasher: inout Hasher) {
@@ -171,15 +174,13 @@ enum ModelCatalog {
             ],
             huggingFaceRepo: "LiquidAI/LFM2.5-1.2B-Thinking-GGUF"),
 
-        // Qwen models (available on LEAP platform via Leap.load())
+        // Qwen models (available on LEAP platform via Leap.load() — Q8_0 only)
         ModelDefinition(
             id: "Qwen3-0.6B", name: "Qwen3-0.6B", provider: "Qwen",
             parameterCount: "0.6B", category: .chat,
             description:
                 "Compact Qwen3 model for lightweight on-device chat via LEAP platform.",
             quantizations: [
-                QuantizationOption(name: "Q4_0", fileSize: "400 MB"),
-                QuantizationOption(name: "Q4_K_M", fileSize: "420 MB"),
                 QuantizationOption(name: "Q8_0", fileSize: "600 MB"),
             ],
             huggingFaceRepo: "Qwen/Qwen3-0.6B-GGUF"),
@@ -189,8 +190,6 @@ enum ModelCatalog {
             description:
                 "Mid-size Qwen3 model with strong multilingual capabilities via LEAP platform.",
             quantizations: [
-                QuantizationOption(name: "Q4_0", fileSize: "950 MB"),
-                QuantizationOption(name: "Q4_K_M", fileSize: "1.0 GB"),
                 QuantizationOption(name: "Q8_0", fileSize: "1.7 GB"),
             ],
             huggingFaceRepo: "Qwen/Qwen3-1.7B-GGUF"),
@@ -306,15 +305,25 @@ enum ModelCatalog {
 
         // OCR models
         ModelDefinition(
-            id: "GLM-OCR", name: "GLM-OCR", provider: "ZAI",
+            id: "GLM-OCR", name: "GLM-OCR (MLX)", provider: "ZAI",
             parameterCount: "0.9B", category: .ocr,
             description:
-                "GLM-OCR via MLX Swift. Multimodal OCR model for complex document understanding, ranked #1 on OmniDocBench. Features a CogViT visual encoder and GLM-0.5B language decoder, optimized for tables, code-heavy documents, and real-world OCR scenarios.",
+                "GLM-OCR via MLX Swift. 131K context window. Ranked #1 on OmniDocBench. CogViT visual encoder + GLM-0.5B language decoder. Optimized for tables, code-heavy documents, and real-world OCR.",
             quantizations: [
                 QuantizationOption(name: "safetensors", fileSize: "~1.8 GB"),
             ],
             huggingFaceRepo: "zai-org/GLM-OCR",
             isGLMOCR: true),
+        ModelDefinition(
+            id: "GLM-OCR-ONNX", name: "GLM-OCR (ONNX)", provider: "ZAI",
+            parameterCount: "0.9B", category: .ocr,
+            description:
+                "GLM-OCR via ONNX Runtime. 131K context window. Quantized for efficient on-device inference. Downloads from HuggingFace.",
+            quantizations: [
+                QuantizationOption(name: "quant", fileSize: "~900 MB"),
+            ],
+            huggingFaceRepo: "Ji-Ha/glm-ocr-onnx",
+            isHuggingFaceOnly: true),
         ModelDefinition(
             id: "PP-OCRv5-Mobile-ONNX", name: "PP-OCRv5 Mobile (ONNX)", provider: "PaddlePaddle",
             parameterCount: "~4M", category: .ocr,
@@ -325,6 +334,16 @@ enum ModelCatalog {
             ],
             huggingFaceRepo: "monkt/paddleocr-onnx",
             isPaddleOCR: true, paddleOCRBackend: "onnx"),
+        ModelDefinition(
+            id: "LightOnOCR-2-1B", name: "LightOnOCR-2-1B", provider: "LightOn",
+            parameterCount: "1B", category: .ocr,
+            description:
+                "End-to-end VLM-based OCR by LightOn AI. 83%+ accuracy on OlmOCR-Bench, supports 11 languages. Attach an image to extract text.",
+            quantizations: [
+                QuantizationOption(name: "Q4_K_M", fileSize: "~700 MB"),
+            ],
+            huggingFaceRepo: "lightonai/LightOnOCR-2-1B-GGUF",
+            useDirectLlamaCpp: true),
         ModelDefinition(
             id: "Apple-Vision-OCR", name: "Apple Vision OCR", provider: "Apple",
             parameterCount: "Built-in", category: .ocr,

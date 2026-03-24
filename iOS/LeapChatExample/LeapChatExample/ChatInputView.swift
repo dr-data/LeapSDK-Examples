@@ -140,6 +140,24 @@ struct ChatInputView: View {
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 20)
+
+            // Token usage indicator
+            if store.estimatedTokensUsed > 0 {
+                let remaining = max(0, store.contextWindowSize - store.estimatedTokensUsed)
+                let usagePercent = min(100, store.estimatedTokensUsed * 100 / max(1, store.contextWindowSize))
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(usagePercent > 80 ? Color.red : usagePercent > 50 ? Color.orange : Color.green)
+                        .frame(width: 5, height: 5)
+                    Text("~\(store.estimatedTokensUsed) / \(store.contextWindowSize) tokens")
+                        .font(.system(size: 10))
+                        .foregroundColor(secondaryText)
+                    Text("(\(remaining) remaining)")
+                        .font(.system(size: 10))
+                        .foregroundColor(secondaryText)
+                }
+                .padding(.bottom, 4)
+            }
         }
         .background(bgColor)
     }

@@ -90,6 +90,12 @@ struct LocalModelsBrowserView: View {
         }
     }
 
+    private func contextLabel(for model: ModelDefinition) -> String {
+        let ctx = modelStore.contextSize(for: model)
+        if ctx >= 32768 { return "\(ctx / 1024)K ctx" }
+        return "\(ctx / 1024)K ctx"
+    }
+
     private func modelRow(_ model: ModelDefinition) -> some View {
         let isDownloaded = modelStore.isModelDownloaded(model)
 
@@ -121,6 +127,12 @@ struct LocalModelsBrowserView: View {
                         .font(.system(size: 13))
                         .foregroundColor(secondaryText)
                     Text(model.provider)
+                        .font(.system(size: 13))
+                        .foregroundColor(secondaryText)
+                    Text("\u{00B7}")
+                        .font(.system(size: 13))
+                        .foregroundColor(secondaryText)
+                    Text(contextLabel(for: model))
                         .font(.system(size: 13))
                         .foregroundColor(secondaryText)
                 }
@@ -166,6 +178,9 @@ struct ProviderIconView: View {
         switch provider {
         case "Qwen": return .purple
         case "ZAI": return .orange
+        case "LightOn": return .yellow
+        case "Apple": return .blue
+        case "PaddlePaddle": return .green
         default: return Color(red: 0.024, green: 0.714, blue: 0.831)
         }
     }
@@ -174,6 +189,9 @@ struct ProviderIconView: View {
         switch provider {
         case "Qwen": return "diamond.fill"
         case "ZAI": return "doc.text.viewfinder"
+        case "LightOn": return "light.max"
+        case "Apple": return "apple.logo"
+        case "PaddlePaddle": return "waveform"
         default: return "drop.fill"
         }
     }
